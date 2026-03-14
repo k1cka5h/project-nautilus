@@ -1,13 +1,13 @@
-# MyOrg.Infra — C#
+# K1cka5h.Infra — C#
 
 Platform-managed CDKTF construct library for Azure. Published to the internal
-NuGet feed at `https://nuget.myorg.internal/v3/index.json`.
+NuGet feed at `https://nuget.k1cka5h.internal/v3/index.json`.
 
 ## Install
 
 ```bash
-dotnet add package MyOrg.Infra --version 1.4.0 \
-  --source https://nuget.myorg.internal/v3/index.json
+dotnet add package K1cka5h.Infra --version 1.4.0 \
+  --source https://nuget.k1cka5h.internal/v3/index.json
 ```
 
 ## Constructs
@@ -30,6 +30,6 @@ dotnet test
 
 ```bash
 dotnet pack -c Release
-dotnet nuget push bin/Release/MyOrg.Infra.1.4.0.nupkg \
-  --source https://nuget.myorg.internal/v3/index.json
+dotnet nuget push bin/Release/K1cka5h.Infra.1.4.0.nupkg \
+  --source https://nuget.k1cka5h.internal/v3/index.json
 ```

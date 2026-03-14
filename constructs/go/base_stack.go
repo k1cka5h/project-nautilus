@@ -1,5 +1,5 @@
 // Package infra provides platform-managed CDKTF constructs for Azure.
-// Published to the internal Go proxy at https://goproxy.myorg.internal.
+// Published to the internal Go proxy at https://goproxy.k1cka5h.internal.
 package infra
 
 import (

@@ -1,4 +1,4 @@
-namespace MyOrg.Infra.Policy;
+namespace K1cka5h.Infra.Policy;
 
 /// <summary>
 /// Required tagging policy.

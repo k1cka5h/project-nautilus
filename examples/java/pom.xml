@@ -6,7 +6,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.myorg</groupId>
+  <groupId>com.k1cka5h</groupId>
   <artifactId>myapp-infra</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
@@ -15,7 +15,7 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <exec.mainClass>com.myorg.myapp.MyAppStack</exec.mainClass>
+    <exec.mainClass>com.k1cka5h.myapp.MyAppStack</exec.mainClass>
   </properties>
 
   <dependencies>
@@ -35,7 +35,7 @@
 
     <!-- Platform construct library — served from the internal Maven registry -->
     <dependency>
-      <groupId>com.myorg</groupId>
+      <groupId>com.k1cka5h</groupId>
       <artifactId>infra</artifactId>
       <version>1.4.0</version>
     </dependency>
@@ -43,8 +43,8 @@
 
   <repositories>
     <repository>
-      <id>myorg-internal</id>
-      <url>https://maven.myorg.internal/releases</url>
+      <id>k1cka5h-internal</id>
+      <url>https://maven.k1cka5h.internal/releases</url>
     </repository>
   </repositories>
 

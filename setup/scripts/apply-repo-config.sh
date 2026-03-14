@@ -12,10 +12,10 @@
 #
 # Example:
 #   GH_TOKEN=ghp_xxx bash setup/scripts/apply-repo-config.sh \
-#     myorg portal-infra setup/configs/product-team.json
+#     k1cka5h portal-infra setup/configs/product-team.json
 #
 #   # Dry run — print what would happen without making any changes:
-#   bash setup/scripts/apply-repo-config.sh myorg portal-infra setup/configs/product-team.json --dry-run
+#   bash setup/scripts/apply-repo-config.sh k1cka5h portal-infra setup/configs/product-team.json --dry-run
 
 set -euo pipefail
 

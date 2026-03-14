@@ -1,7 +1,7 @@
-# com.myorg:infra — Java
+# com.k1cka5h:infra — Java
 
 Platform-managed CDKTF construct library for Azure. Published to the internal
-Maven registry at `https://maven.myorg.internal/releases`.
+Maven registry at `https://maven.k1cka5h.internal/releases`.
 
 ## Install
 
@@ -9,7 +9,7 @@ Add to `pom.xml`:
 
 ```xml
 <dependency>
-  <groupId>com.myorg</groupId>
+  <groupId>com.k1cka5h</groupId>
   <artifactId>infra</artifactId>
   <version>1.4.0</version>
 </dependency>
@@ -19,8 +19,8 @@ Add the internal repository:
 
 ```xml
 <repository>
-  <id>myorg-internal</id>
-  <url>https://maven.myorg.internal/releases</url>
+  <id>k1cka5h-internal</id>
+  <url>https://maven.k1cka5h.internal/releases</url>
 </repository>
 ```
 

@@ -15,7 +15,7 @@ import (
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 	"github.com/hashicorp/terraform-cdk-go/cdktf"
-	infra "github.com/myorg/infra-go"
+	infra "github.com/k1cka5h/infra-go"
 )
 
 func newMyAppStack(scope constructs.Construct, id string) cdktf.TerraformStack {

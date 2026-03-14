@@ -27,7 +27,7 @@ variable "state_storage_account_name" {
 }
 
 variable "github_org" {
-  description = "GitHub organization slug (e.g. myorg). Used to scope the platform SP's OIDC federated credential."
+  description = "GitHub organization slug (e.g. k1cka5h). Used to scope the platform SP's OIDC federated credential."
   type        = string
 }
 

@@ -1,12 +1,12 @@
-# myorg-infra — Python
+# k1cka5h-infra — Python
 
 Platform-managed CDKTF construct library for Azure. Published to the internal
-PyPI registry at `https://pkgs.myorg.internal/simple`.
+PyPI registry at `https://pkgs.k1cka5h.internal/simple`.
 
 ## Install
 
 ```bash
-pip install myorg-infra==1.4.0 --index-url https://pkgs.myorg.internal/simple
+pip install k1cka5h-infra==1.4.0 --index-url https://pkgs.k1cka5h.internal/simple
 ```
 
 ## Constructs
@@ -29,5 +29,5 @@ pytest tests/ -v
 
 ```bash
 python -m build
-twine upload --repository-url https://pkgs.myorg.internal dist/*
+twine upload --repository-url https://pkgs.k1cka5h.internal dist/*
 ```

@@ -1,9 +1,9 @@
 """
-myorg_infra — Platform-managed CDKTF construct library for Azure.
+k1cka5h_infra — Platform-managed CDKTF construct library for Azure.
 
 Import everything from this top-level package:
 
-    from myorg_infra import (
+    from k1cka5h_infra import (
         BaseAzureStack,
         NetworkConstruct, SubnetConfig, SubnetDelegation,
         DatabaseConstruct, PostgresConfig,

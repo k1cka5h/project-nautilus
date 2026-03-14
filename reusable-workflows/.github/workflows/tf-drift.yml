@@ -9,7 +9,7 @@ name: Terraform Drift Detection
 #   jobs:
 #     drift-prod:
 #       if: github.event_name == 'schedule'
-#       uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+#       uses: k1cka5h/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
 #       with:
 #         environment:    prod
 #         var_file:       prod/terraform.tfvars

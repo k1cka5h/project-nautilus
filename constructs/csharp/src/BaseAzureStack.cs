@@ -2,7 +2,7 @@ using Constructs;
 using HashiCorp.Cdktf;
 using HashiCorp.Cdktf.Providers.Azurerm.Provider;
 
-namespace MyOrg.Infra;
+namespace K1cka5h.Infra;
 
 public record BaseAzureStackProps(
     string Project,

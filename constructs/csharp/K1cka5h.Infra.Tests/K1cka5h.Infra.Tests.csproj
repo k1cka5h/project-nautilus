@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../MyOrg.Infra.csproj" />
+    <ProjectReference Include="../K1cka5h.Infra.csproj" />
   </ItemGroup>
 
 </Project>

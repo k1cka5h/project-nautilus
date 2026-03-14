@@ -1,4 +1,4 @@
-package com.myorg.infra;
+package com.k1cka5h.infra;
 
 import software.constructs.Construct;
 import com.hashicorp.cdktf.TerraformStack;

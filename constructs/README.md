@@ -6,11 +6,11 @@ constructs it exports. The platform team owns all code here.
 
 ```
 constructs/
-├── python/       myorg-infra          → internal PyPI
-├── typescript/   @myorg/infra         → internal npm
-├── csharp/       MyOrg.Infra          → internal NuGet
-├── java/         com.myorg:infra      → internal Maven
-└── go/           github.com/myorg/infra-go  → internal Go proxy
+├── python/       k1cka5h-infra          → internal PyPI
+├── typescript/   @k1cka5h/infra         → internal npm
+├── csharp/       K1cka5h.Infra          → internal NuGet
+├── java/         com.k1cka5h:infra      → internal Maven
+└── go/           github.com/k1cka5h/infra-go  → internal Go proxy
 ```
 
 Each library wraps the same three platform Terraform modules
@@ -42,11 +42,11 @@ are optional — instantiate only what the team needs.
 
 | Language | Package | Registry | Install |
 |----------|---------|---------|---------|
-| Python | `myorg-infra` | `https://pkgs.myorg.internal/simple` | `pip install myorg-infra==<version>` |
-| TypeScript | `@myorg/infra` | `https://npm.myorg.internal` | `npm install @myorg/infra@<version>` |
-| C# | `MyOrg.Infra` | `https://nuget.myorg.internal/v3/index.json` | `dotnet add package MyOrg.Infra --version <version>` |
-| Java | `com.myorg:infra` | `https://maven.myorg.internal` | Add to `pom.xml` — see library README |
-| Go | `github.com/myorg/infra-go` | `https://goproxy.myorg.internal` | `go get github.com/myorg/infra-go@v<version>` |
+| Python | `k1cka5h-infra` | `https://pkgs.k1cka5h.internal/simple` | `pip install k1cka5h-infra==<version>` |
+| TypeScript | `@k1cka5h/infra` | `https://npm.k1cka5h.internal` | `npm install @k1cka5h/infra@<version>` |
+| C# | `K1cka5h.Infra` | `https://nuget.k1cka5h.internal/v3/index.json` | `dotnet add package K1cka5h.Infra --version <version>` |
+| Java | `com.k1cka5h:infra` | `https://maven.k1cka5h.internal` | Add to `pom.xml` — see library README |
+| Go | `github.com/k1cka5h/infra-go` | `https://goproxy.k1cka5h.internal` | `go get github.com/k1cka5h/infra-go@v<version>` |
 
 See each library's `README.md` for language-specific install and usage examples.
 
@@ -97,7 +97,7 @@ npm install && npm test
 
 # C#
 cd constructs/csharp
-dotnet test MyOrg.Infra.Tests/
+dotnet test K1cka5h.Infra.Tests/
 
 # Java
 cd constructs/java
@@ -122,7 +122,7 @@ be added to all five libraries before the release is tagged. Steps:
 
 1. Add the construct file to each library following existing patterns.
 2. Update the language-specific export surface:
-   - **Python**: `myorg_infra/constructs/__init__.py` and `myorg_infra/__init__.py`
+   - **Python**: `k1cka5h_infra/constructs/__init__.py` and `k1cka5h_infra/__init__.py`
    - **TypeScript**: `src/index.ts`
    - **C#**: add a new class file (no explicit export needed)
    - **Java**: add a new class file (no explicit export needed)

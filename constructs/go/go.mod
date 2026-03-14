@@ -1,4 +1,4 @@
-module github.com/myorg/infra-go
+module github.com/k1cka5h/infra-go
 
 go 1.22
 

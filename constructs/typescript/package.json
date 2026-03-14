@@ -1,5 +1,5 @@
 {
-  "name": "@myorg/infra",
+  "name": "@k1cka5h/infra",
   "version": "1.4.0",
   "description": "Platform-managed CDKTF construct library for Azure",
   "main": "lib/index.js",
@@ -31,6 +31,6 @@
     "testMatch": ["**/test/**/*.test.ts"]
   },
   "publishConfig": {
-    "registry": "https://npm.myorg.internal"
+    "registry": "https://npm.k1cka5h.internal"
   }
 }

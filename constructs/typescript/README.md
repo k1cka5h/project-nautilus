@@ -1,12 +1,12 @@
-# @myorg/infra — TypeScript
+# @k1cka5h/infra — TypeScript
 
 Platform-managed CDKTF construct library for Azure. Published to the internal
-npm registry at `https://npm.myorg.internal`.
+npm registry at `https://npm.k1cka5h.internal`.
 
 ## Install
 
 ```bash
-npm install @myorg/infra@1.4.0 --registry https://npm.myorg.internal
+npm install @k1cka5h/infra@1.4.0 --registry https://npm.k1cka5h.internal
 ```
 
 ## Constructs
@@ -30,5 +30,5 @@ npm test
 
 ```bash
 npm run build
-npm publish --registry https://npm.myorg.internal
+npm publish --registry https://npm.k1cka5h.internal
 ```

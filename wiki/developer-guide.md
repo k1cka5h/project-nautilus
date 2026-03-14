@@ -26,11 +26,11 @@ platform team and not visible to product teams.
 
 | Language | Package | Registry |
 |----------|---------|---------|
-| Python | `myorg-infra` | Internal PyPI |
-| TypeScript | `@myorg/infra` | Internal npm |
-| C# | `MyOrg.Infra` | Internal NuGet |
-| Java | `com.myorg:infra` | Internal Maven |
-| Go | `github.com/myorg/infra-go` | Internal Go proxy |
+| Python | `k1cka5h-infra` | Internal PyPI |
+| TypeScript | `@k1cka5h/infra` | Internal npm |
+| C# | `K1cka5h.Infra` | Internal NuGet |
+| Java | `com.k1cka5h:infra` | Internal Maven |
+| Go | `github.com/k1cka5h/infra-go` | Internal Go proxy |
 
 All five produce identical Terraform JSON. The synthesized output is what the
 pipeline operates on.

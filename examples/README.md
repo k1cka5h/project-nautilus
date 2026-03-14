@@ -6,11 +6,11 @@ and provision the same Azure resources.
 
 | Language | Directory | Package manager | Internal registry |
 |----------|-----------|-----------------|-------------------|
-| Python | [`python/`](python/) | pip | `https://pkgs.myorg.internal/simple` |
-| TypeScript | [`typescript/`](typescript/) | npm | `https://npm.myorg.internal` |
-| C# | [`csharp/`](csharp/) | NuGet | `https://nuget.myorg.internal/v3/index.json` |
-| Java | [`java/`](java/) | Maven | `https://maven.myorg.internal/releases` |
-| Go | [`go/`](go/) | Go modules | `https://goproxy.myorg.internal` |
+| Python | [`python/`](python/) | pip | `https://pkgs.k1cka5h.internal/simple` |
+| TypeScript | [`typescript/`](typescript/) | npm | `https://npm.k1cka5h.internal` |
+| C# | [`csharp/`](csharp/) | NuGet | `https://nuget.k1cka5h.internal/v3/index.json` |
+| Java | [`java/`](java/) | Maven | `https://maven.k1cka5h.internal/releases` |
+| Go | [`go/`](go/) | Go modules | `https://goproxy.k1cka5h.internal` |
 
 ---
 
@@ -28,11 +28,11 @@ releases against Python first, then publishes language bindings for the others.
 
 | Language | Package | Install |
 |----------|---------|---------|
-| Python | `myorg-infra` | `pip install myorg-infra==1.4.0 --index-url https://pkgs.myorg.internal/simple` |
-| TypeScript | `@myorg/infra` | `npm install @myorg/infra@1.4.0 --registry https://npm.myorg.internal` |
-| C# | `MyOrg.Infra` | `dotnet add package MyOrg.Infra --version 1.4.0` |
-| Java | `com.myorg:infra` | See `pom.xml` — `<version>1.4.0</version>` |
-| Go | `github.com/myorg/infra-go` | `go get github.com/myorg/infra-go@v1.4.0` |
+| Python | `k1cka5h-infra` | `pip install k1cka5h-infra==1.4.0 --index-url https://pkgs.k1cka5h.internal/simple` |
+| TypeScript | `@k1cka5h/infra` | `npm install @k1cka5h/infra@1.4.0 --registry https://npm.k1cka5h.internal` |
+| C# | `K1cka5h.Infra` | `dotnet add package K1cka5h.Infra --version 1.4.0` |
+| Java | `com.k1cka5h:infra` | See `pom.xml` — `<version>1.4.0</version>` |
+| Go | `github.com/k1cka5h/infra-go` | `go get github.com/k1cka5h/infra-go@v1.4.0` |
 
 All packages are generated from the same JSII source. APIs are structurally
 identical across languages — only naming conventions differ (see table below).

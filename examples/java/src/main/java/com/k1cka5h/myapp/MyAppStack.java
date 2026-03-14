@@ -8,7 +8,7 @@
  *   ENVIRONMENT=dev DB_ADMIN_PASSWORD=... cdktf synth
  */
 
-package com.myorg.myapp;
+package com.k1cka5h.myapp;
 
 import java.util.List;
 import java.util.Map;
@@ -18,19 +18,19 @@ import com.hashicorp.cdktf.App;
 import com.hashicorp.cdktf.TerraformOutput;
 import com.hashicorp.cdktf.TerraformOutputConfig;
 
-import com.myorg.infra.BaseAzureStack;
-import com.myorg.infra.BaseAzureStackProps;
-import com.myorg.infra.constructs.NetworkConstruct;
-import com.myorg.infra.constructs.NetworkConstructProps;
-import com.myorg.infra.constructs.SubnetConfig;
-import com.myorg.infra.constructs.SubnetDelegation;
-import com.myorg.infra.constructs.DatabaseConstruct;
-import com.myorg.infra.constructs.DatabaseConstructProps;
-import com.myorg.infra.constructs.PostgresConfig;
-import com.myorg.infra.constructs.AksConstruct;
-import com.myorg.infra.constructs.AksConstructProps;
-import com.myorg.infra.constructs.AksConfig;
-import com.myorg.infra.constructs.NodePoolConfig;
+import com.k1cka5h.infra.BaseAzureStack;
+import com.k1cka5h.infra.BaseAzureStackProps;
+import com.k1cka5h.infra.constructs.NetworkConstruct;
+import com.k1cka5h.infra.constructs.NetworkConstructProps;
+import com.k1cka5h.infra.constructs.SubnetConfig;
+import com.k1cka5h.infra.constructs.SubnetDelegation;
+import com.k1cka5h.infra.constructs.DatabaseConstruct;
+import com.k1cka5h.infra.constructs.DatabaseConstructProps;
+import com.k1cka5h.infra.constructs.PostgresConfig;
+import com.k1cka5h.infra.constructs.AksConstruct;
+import com.k1cka5h.infra.constructs.AksConstructProps;
+import com.k1cka5h.infra.constructs.AksConfig;
+import com.k1cka5h.infra.constructs.NodePoolConfig;
 
 public class MyAppStack extends BaseAzureStack {
 

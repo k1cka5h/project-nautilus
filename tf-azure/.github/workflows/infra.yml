@@ -40,14 +40,14 @@ jobs:
   # ── Always: validate ──────────────────────────────────────────────────────────
   validate:
     if: github.event_name != 'schedule'
-    uses: myorg/reusable-workflows/.github/workflows/tf-validate.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-validate.yml@v1.0.0
     secrets:
       tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
 
   # ── PR only: detect which environments are affected ───────────────────────────
   changes:
     if: github.event_name == 'pull_request'
-    uses: myorg/reusable-workflows/.github/workflows/tf-changes.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-changes.yml@v1.0.0
 
   # ── PR only: plan affected environments in parallel ───────────────────────────
   # Each plan job runs only if shared/ or its own env folder changed.
@@ -59,7 +59,7 @@ jobs:
     concurrency:
       group: plan-dev-${{ github.head_ref }}
       cancel-in-progress: true
-    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
     with:
       environment:    dev
       var_file:       dev/terraform.tfvars
@@ -78,7 +78,7 @@ jobs:
     concurrency:
       group: plan-qa-${{ github.head_ref }}
       cancel-in-progress: true
-    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
     with:
       environment:    qa
       var_file:       qa/terraform.tfvars
@@ -97,7 +97,7 @@ jobs:
     concurrency:
       group: plan-stage-${{ github.head_ref }}
       cancel-in-progress: true
-    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
     with:
       environment:    stage
       var_file:       stage/terraform.tfvars
@@ -116,7 +116,7 @@ jobs:
     concurrency:
       group: plan-prod-${{ github.head_ref }}
       cancel-in-progress: true
-    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
     with:
       environment:    prod
       var_file:       prod/terraform.tfvars
@@ -142,7 +142,7 @@ jobs:
     concurrency:
       group: deploy-dev
       cancel-in-progress: false
-    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
     with:
       environment:    dev
       var_file:       dev/terraform.tfvars
@@ -161,7 +161,7 @@ jobs:
     concurrency:
       group: deploy-qa
       cancel-in-progress: false
-    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
     with:
       environment:    qa
       var_file:       qa/terraform.tfvars
@@ -190,7 +190,7 @@ jobs:
     concurrency:
       group: deploy-stage
       cancel-in-progress: false
-    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
     with:
       environment:    stage
       var_file:       stage/terraform.tfvars
@@ -218,7 +218,7 @@ jobs:
     concurrency:
       group: deploy-prod
       cancel-in-progress: false
-    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
     with:
       environment:              prod
       var_file:                 prod/terraform.tfvars
@@ -238,7 +238,7 @@ jobs:
 
   drift-dev:
     if: github.event_name == 'schedule'
-    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
     with:
       environment:    dev
       var_file:       dev/terraform.tfvars
@@ -253,7 +253,7 @@ jobs:
 
   drift-qa:
     if: github.event_name == 'schedule'
-    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
     with:
       environment:    qa
       var_file:       qa/terraform.tfvars
@@ -268,7 +268,7 @@ jobs:
 
   drift-stage:
     if: github.event_name == 'schedule'
-    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
     with:
       environment:    stage
       var_file:       stage/terraform.tfvars
@@ -283,7 +283,7 @@ jobs:
 
   drift-prod:
     if: github.event_name == 'schedule'
-    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    uses: k1cka5h/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
     with:
       environment:    prod
       var_file:       prod/terraform.tfvars

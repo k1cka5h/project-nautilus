@@ -50,4 +50,4 @@ jobs:
           VERSION="${{ github.ref_name }}"
           curl --fail --silent \
             --header "Authorization: Bearer ${{ secrets.REGISTRY_TOKEN }}" \
-            "https://goproxy.myorg.internal/${MODULE}/@v/${VERSION}.info"
+            "https://goproxy.k1cka5h.internal/${MODULE}/@v/${VERSION}.info"

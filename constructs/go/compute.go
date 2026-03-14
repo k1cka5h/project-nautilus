@@ -4,10 +4,10 @@ import (
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 	"github.com/hashicorp/terraform-cdk-go/cdktf"
-	"github.com/myorg/infra-go/policy"
+	"github.com/k1cka5h/infra-go/policy"
 )
 
-const aksModuleSource = "git::ssh://git@github.com/myorg/terraform-modules.git" +
+const aksModuleSource = "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
 	"//modules/compute/aks?ref=v1.4.0"
 
 // NodePoolConfig defines an additional AKS node pool.

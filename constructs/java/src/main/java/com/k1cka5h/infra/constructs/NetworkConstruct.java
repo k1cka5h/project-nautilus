@@ -1,9 +1,9 @@
-package com.myorg.infra.constructs;
+package com.k1cka5h.infra.constructs;
 
 import software.constructs.Construct;
 import com.hashicorp.cdktf.TerraformModule;
 import com.hashicorp.cdktf.TerraformModuleConfig;
-import com.myorg.infra.policy.Tagging;
+import com.k1cka5h.infra.policy.Tagging;
 
 import java.util.*;
 
@@ -14,7 +14,7 @@ import java.util.*;
 public class NetworkConstruct extends Construct {
 
     private static final String MODULE_SOURCE =
-        "git::ssh://git@github.com/myorg/terraform-modules.git" +
+        "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
         "//modules/networking?ref=v1.4.0";
 
     private final TerraformModule module;

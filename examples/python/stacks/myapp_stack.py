@@ -4,7 +4,7 @@ myapp infrastructure stack — Python
 Equivalent to all other examples in examples/<language>/.
 
 To synthesize:
-    pip install myorg-infra==1.4.0 --index-url https://pkgs.myorg.internal/simple
+    pip install k1cka5h-infra==1.4.0 --index-url https://pkgs.k1cka5h.internal/simple
     npm install -g cdktf-cli@0.20
     ENVIRONMENT=dev DB_ADMIN_PASSWORD=... cdktf synth
 """
@@ -13,7 +13,7 @@ import os
 from constructs import Construct
 from cdktf import App, TerraformOutput
 
-from myorg_infra import (
+from k1cka5h_infra import (
     BaseAzureStack,
     NetworkConstruct,
     SubnetConfig,

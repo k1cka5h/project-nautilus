@@ -59,19 +59,19 @@ bash setup/scripts/apply-repo-config.sh <org> <repo> <config-file> [--dry-run]
 ```bash
 # Apply platform config to the Terraform modules repo
 bash setup/scripts/apply-repo-config.sh \
-  myorg terraform-modules setup/configs/terraform-modules.json
+  k1cka5h terraform-modules setup/configs/terraform-modules.json
 
 # Apply construct library config to the Python library repo
 bash setup/scripts/apply-repo-config.sh \
-  myorg myorg-infra-python setup/configs/construct-library.json
+  k1cka5h k1cka5h-infra-python setup/configs/construct-library.json
 
 # Apply product team config when onboarding a new team
 bash setup/scripts/apply-repo-config.sh \
-  myorg portal-infra setup/configs/product-team.json
+  k1cka5h portal-infra setup/configs/product-team.json
 
 # Dry run — print what would happen without making any changes
 bash setup/scripts/apply-repo-config.sh \
-  myorg portal-infra setup/configs/product-team.json --dry-run
+  k1cka5h portal-infra setup/configs/product-team.json --dry-run
 ```
 
 ### What the script does
@@ -119,8 +119,8 @@ rerun the script against it — the script is idempotent.
 
 | Item | How to handle it |
 |------|-----------------|
-| Creating the GitHub repository | `gh repo create myorg/<repo> --private` or GitHub UI |
-| Adding `REGISTRY_TOKEN` secret (construct repos) | `gh secret set REGISTRY_TOKEN --repo myorg/<repo>` |
+| Creating the GitHub repository | `gh repo create k1cka5h/<repo> --private` or GitHub UI |
+| Adding `REGISTRY_TOKEN` secret (construct repos) | `gh secret set REGISTRY_TOKEN --repo k1cka5h/<repo>` |
 | Adding product team Azure secrets | From `terraform output github_secrets` in `bootstrap/product-team/` |
 | Adding `TF_MODULES_DEPLOY_KEY` | See [wiki/platform-module-maintenance.md](../wiki/platform-module-maintenance.md#provisioning-a-deploy-key-for-a-new-product-team) |
 | Inviting product team members | GitHub org member management |

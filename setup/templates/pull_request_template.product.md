@@ -20,4 +20,4 @@
 - [ ] No secrets are hardcoded in the stack file
 - [ ] The `project` and `environment` values have not changed (changing them destroys all resources)
 - [ ] Stack synthesizes cleanly locally (`cdktf synth`)
-- [ ] Platform team tagged for review if this affects staging or prod (`@myorg/platform-infra`)
+- [ ] Platform team tagged for review if this affects staging or prod (`@k1cka5h/platform-infra`)

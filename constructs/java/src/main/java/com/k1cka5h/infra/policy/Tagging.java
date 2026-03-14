@@ -1,4 +1,4 @@
-package com.myorg.infra.policy;
+package com.k1cka5h.infra.policy;
 
 import java.util.HashMap;
 import java.util.Map;

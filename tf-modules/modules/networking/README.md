@@ -6,10 +6,10 @@ optional per-subnet.
 
 ## Usage (via CDKTF construct)
 
-Developers do not call this module directly. Use `NetworkConstruct` from `myorg-infra`:
+Developers do not call this module directly. Use `NetworkConstruct` from `k1cka5h-infra`:
 
 ```python
-from myorg_infra import NetworkConstruct, SubnetConfig, SubnetDelegation
+from k1cka5h_infra import NetworkConstruct, SubnetConfig, SubnetDelegation
 
 network = NetworkConstruct(
     self, "network",

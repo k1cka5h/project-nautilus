@@ -13,7 +13,7 @@ on:
       org:
         description: GitHub organization
         required: true
-        default: myorg
+        default: k1cka5h
       repo:
         description: Target repository name (e.g. terraform-modules, portal-infra)
         required: true

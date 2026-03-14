@@ -53,11 +53,11 @@ project-nautilus/
 │   └── tests/                      Pytest suite — validates all workflow structure
 │
 ├── constructs/                     Construct libraries, one per language
-│   ├── python/                     myorg-infra — published to internal PyPI
-│   ├── typescript/                 @myorg/infra — published to internal npm
-│   ├── csharp/                     MyOrg.Infra — published to internal NuGet
-│   ├── java/                       com.myorg:infra — published to internal Maven
-│   └── go/                         github.com/myorg/infra-go — internal Go proxy
+│   ├── python/                     k1cka5h-infra — published to internal PyPI
+│   ├── typescript/                 @k1cka5h/infra — published to internal npm
+│   ├── csharp/                     K1cka5h.Infra — published to internal NuGet
+│   ├── java/                       com.k1cka5h:infra — published to internal Maven
+│   └── go/                         github.com/k1cka5h/infra-go — internal Go proxy
 │
 ├── policy/                         OPA/conftest policies (gate every terraform plan)
 │   ├── deny_public_resources.rego
@@ -157,7 +157,7 @@ Before implementing Nautilus, your organization needs:
 
 ### 1. Fork and rename
 
-Fork this repository. Replace `myorg` throughout with your organization slug.
+Fork this repository. Replace `k1cka5h` throughout with your organization slug.
 Key locations to update:
 
 | File | What to change |
@@ -165,9 +165,9 @@ Key locations to update:
 | `constructs/*/` source files | Package names, import paths |
 | `constructs/*/pyproject.toml`, `package.json`, `pom.xml`, etc. | Package name, registry URL |
 | `tf-modules/modules/*/main.tf` | Any org-specific defaults |
-| `reusable-workflows/.github/workflows/*.yml` | `myorg/terraform-modules` source refs |
-| `tf-azure/.github/workflows/infra.yml` | `myorg/reusable-workflows` refs |
-| `wiki/` | All references to `myorg`, `pkgs.myorg.internal`, `#platform-infra` |
+| `reusable-workflows/.github/workflows/*.yml` | `k1cka5h/terraform-modules` source refs |
+| `tf-azure/.github/workflows/infra.yml` | `k1cka5h/reusable-workflows` refs |
+| `wiki/` | All references to `k1cka5h`, `pkgs.k1cka5h.internal`, `#platform-infra` |
 
 ### 2. Run the platform bootstrap
 
@@ -179,7 +179,7 @@ cd bootstrap/platform
 terraform init
 terraform apply \
   -var="platform_subscription_id=<platform-sub-id>" \
-  -var="github_org=myorg" \
+  -var="github_org=k1cka5h" \
   -var="github_repo=project-nautilus"
 ```
 
@@ -201,7 +201,7 @@ terraform init \
   -backend-config="use_oidc=true"
 terraform apply \
   -var="product_name=portal" \
-  -var="github_org=myorg" \
+  -var="github_org=k1cka5h" \
   -var="github_repo=portal-infra" \
   -var='subscription_ids={"dev":"<id>","qa":"<id>","stage":"<id>","prod":"<id>"}' \
   -var="state_storage_account_id=<from platform output>" \

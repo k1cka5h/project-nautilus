@@ -3,7 +3,7 @@
 # Creates the network resource group.
 
 module "network" {
-  source = "git::ssh://git@github.com/myorg/terraform-modules.git//modules/networking?ref=v1.4.0"
+  source = "git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/networking?ref=v1.4.0"
 
   project             = var.project
   environment         = var.environment
@@ -20,7 +20,7 @@ module "network" {
 # Skipped entirely when enable_database = false.
 
 module "database" {
-  source = "git::ssh://git@github.com/myorg/terraform-modules.git//modules/database/postgres?ref=v1.4.0"
+  source = "git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/database/postgres?ref=v1.4.0"
   count  = var.enable_database ? 1 : 0
 
   project                = var.project
@@ -47,7 +47,7 @@ module "database" {
 # Skipped entirely when enable_aks = false.
 
 module "aks" {
-  source = "git::ssh://git@github.com/myorg/terraform-modules.git//modules/compute/aks?ref=v1.4.0"
+  source = "git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/compute/aks?ref=v1.4.0"
   count  = var.enable_aks ? 1 : 0
 
   project                    = var.project
