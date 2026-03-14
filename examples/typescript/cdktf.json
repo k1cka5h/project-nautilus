@@ -1,0 +1,12 @@
+{
+  "language": "typescript",
+  "app": "npx ts-node stacks/myapp-stack.ts",
+  "projectId": "myapp-cdktf-ts",
+  "sendCrashReports": "false",
+  "terraformProviders": [],
+  "terraformModules": [],
+  "context": {
+    "excludeStackIdFromLogicalIds": "true",
+    "allowSepCharsInLogicalIds": "true"
+  }
+}

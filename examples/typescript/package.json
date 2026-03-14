@@ -1,0 +1,20 @@
+{
+  "name": "myapp-infra",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "synth": "cdktf synth",
+    "diff":  "cdktf diff",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@myorg/infra":    "1.4.0",
+    "cdktf":           "^0.20.0",
+    "constructs":      "^10.3.0"
+  },
+  "devDependencies": {
+    "@types/node":     "^20.0.0",
+    "ts-node":         "^10.9.0",
+    "typescript":      "^5.4.0"
+  }
+}

@@ -1,0 +1,297 @@
+name: Infrastructure
+
+# ── Triggers ────────────────────────────────────────────────────────────────────
+# PR         → validate + plan only the environments whose files changed
+# Push main  → validate + deploy sequentially dev → qa → stage → prod
+# Schedule   → daily drift check on all environments
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "shared/**"
+      - "dev/**"
+      - "qa/**"
+      - "stage/**"
+      - "prod/**"
+      - "policy/**"
+  push:
+    branches: [main]
+    paths:
+      - "shared/**"
+      - "dev/**"
+      - "qa/**"
+      - "stage/**"
+      - "prod/**"
+  schedule:
+    - cron: "0 3 * * *"   # 03:00 UTC daily — drift detection
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write      # OIDC token exchange with Azure
+  pull-requests: write # post plan comments
+  issues: write        # open drift issues
+
+jobs:
+
+  # ── Always: validate ──────────────────────────────────────────────────────────
+  validate:
+    if: github.event_name != 'schedule'
+    uses: myorg/reusable-workflows/.github/workflows/tf-validate.yml@v1.0.0
+    secrets:
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+
+  # ── PR only: detect which environments are affected ───────────────────────────
+  changes:
+    if: github.event_name == 'pull_request'
+    uses: myorg/reusable-workflows/.github/workflows/tf-changes.yml@v1.0.0
+
+  # ── PR only: plan affected environments in parallel ───────────────────────────
+  # Each plan job runs only if shared/ or its own env folder changed.
+  # cancel-in-progress: true — a new commit to the PR supersedes the old plan.
+
+  plan-dev:
+    needs: [validate, changes]
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.shared == 'true' || needs.changes.outputs.dev == 'true')
+    concurrency:
+      group: plan-dev-${{ github.head_ref }}
+      cancel-in-progress: true
+    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    with:
+      environment:    dev
+      var_file:       dev/terraform.tfvars
+      backend_config: dev/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.DEV_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.DEV_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  plan-qa:
+    needs: [validate, changes]
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.shared == 'true' || needs.changes.outputs.qa == 'true')
+    concurrency:
+      group: plan-qa-${{ github.head_ref }}
+      cancel-in-progress: true
+    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    with:
+      environment:    qa
+      var_file:       qa/terraform.tfvars
+      backend_config: qa/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.QA_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.QA_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  plan-stage:
+    needs: [validate, changes]
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.shared == 'true' || needs.changes.outputs.stage == 'true')
+    concurrency:
+      group: plan-stage-${{ github.head_ref }}
+      cancel-in-progress: true
+    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    with:
+      environment:    stage
+      var_file:       stage/terraform.tfvars
+      backend_config: stage/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.STAGE_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.STAGE_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  plan-prod:
+    needs: [validate, changes]
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.shared == 'true' || needs.changes.outputs.prod == 'true')
+    concurrency:
+      group: plan-prod-${{ github.head_ref }}
+      cancel-in-progress: true
+    uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+    with:
+      environment:    prod
+      var_file:       prod/terraform.tfvars
+      backend_config: prod/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.PROD_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.PROD_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  # ── Push only: sequential deploy ──────────────────────────────────────────────
+  # dev and qa deploy automatically after validate passes.
+  # stage and prod require manual approval via GitHub Environments (gate jobs).
+  #
+  # Gate jobs use `environment:` which IS evaluated against THIS repo's
+  # GitHub Environment protection rules — add required reviewers there.
+
+  deploy-dev:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: false
+    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    with:
+      environment:    dev
+      var_file:       dev/terraform.tfvars
+      backend_config: dev/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.DEV_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.DEV_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  deploy-qa:
+    needs: deploy-dev
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: deploy-qa
+      cancel-in-progress: false
+    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    with:
+      environment:    qa
+      var_file:       qa/terraform.tfvars
+      backend_config: qa/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.QA_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.QA_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  # Approval gate — pauses here until a required reviewer approves.
+  # Configure reviewers at: repo Settings → Environments → stage
+  gate-stage:
+    needs: deploy-qa
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: stage
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Approved — proceeding with stage deployment"
+
+  deploy-stage:
+    needs: gate-stage
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: deploy-stage
+      cancel-in-progress: false
+    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    with:
+      environment:    stage
+      var_file:       stage/terraform.tfvars
+      backend_config: stage/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.STAGE_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.STAGE_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  # Approval gate — Configure reviewers at: repo Settings → Environments → prod
+  gate-prod:
+    needs: deploy-stage
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Approved — proceeding with prod deployment"
+
+  deploy-prod:
+    needs: gate-prod
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    uses: myorg/reusable-workflows/.github/workflows/tf-deploy.yml@v1.0.0
+    with:
+      environment:              prod
+      var_file:                 prod/terraform.tfvars
+      backend_config:           prod/backend.hcl
+      plan_artifact_retention_days: 90
+    secrets:
+      azure_client_id:       ${{ secrets.PROD_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.PROD_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  # ── Schedule only: daily drift detection ──────────────────────────────────────
+  # Runs terraform plan with -detailed-exitcode against every environment.
+  # If the plan shows changes (exit 2), opens a GitHub issue labelled 'drift'.
+
+  drift-dev:
+    if: github.event_name == 'schedule'
+    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    with:
+      environment:    dev
+      var_file:       dev/terraform.tfvars
+      backend_config: dev/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.DEV_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.DEV_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  drift-qa:
+    if: github.event_name == 'schedule'
+    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    with:
+      environment:    qa
+      var_file:       qa/terraform.tfvars
+      backend_config: qa/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.QA_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.QA_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  drift-stage:
+    if: github.event_name == 'schedule'
+    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    with:
+      environment:    stage
+      var_file:       stage/terraform.tfvars
+      backend_config: stage/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.STAGE_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.STAGE_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}
+
+  drift-prod:
+    if: github.event_name == 'schedule'
+    uses: myorg/reusable-workflows/.github/workflows/tf-drift.yml@v1.0.0
+    with:
+      environment:    prod
+      var_file:       prod/terraform.tfvars
+      backend_config: prod/backend.hcl
+    secrets:
+      azure_client_id:       ${{ secrets.PROD_AZURE_CLIENT_ID }}
+      azure_subscription_id: ${{ secrets.PROD_AZURE_SUBSCRIPTION_ID }}
+      azure_tenant_id:       ${{ vars.AZURE_TENANT_ID }}
+      tf_modules_deploy_key: ${{ secrets.TF_MODULES_DEPLOY_KEY }}
+      tf_var_db_password:    ${{ secrets.DB_ADMIN_PASSWORD }}
+      tf_var_log_workspace:  ${{ secrets.LOG_WORKSPACE_ID }}

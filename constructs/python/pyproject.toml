@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "myorg-infra"
+version = "1.4.0"
+description = "Platform-managed CDKTF construct library for Azure"
+requires-python = ">=3.11"
+dependencies = [
+    "cdktf>=0.20,<0.21",
+    "cdktf-cdktf-provider-azurerm>=12,<13",
+    "constructs>=10.3,<11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-xdist",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["myorg_infra*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

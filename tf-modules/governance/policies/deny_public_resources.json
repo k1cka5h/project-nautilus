@@ -1,0 +1,47 @@
+{
+  "mode": "All",
+  "displayName": "Deny public-facing resources",
+  "description": "Blocks creation of public IPs, public network access on PaaS services, and public blob access. Applied to all subscriptions.",
+  "policyRule": {
+    "if": {
+      "anyOf": [
+        {
+          "field": "type",
+          "equals": "Microsoft.Network/publicIPAddresses"
+        },
+        {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Storage/storageAccounts"
+            },
+            {
+              "field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
+              "equals": "true"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "field": "type",
+              "in": [
+                "Microsoft.DBforPostgreSQL/flexibleServers",
+                "Microsoft.Sql/servers",
+                "Microsoft.Cache/redis",
+                "Microsoft.KeyVault/vaults"
+              ]
+            },
+            {
+              "field": "Microsoft.DBforPostgreSQL/flexibleServers/network.publicNetworkAccess",
+              "equals": "Enabled"
+            }
+          ]
+        }
+      ]
+    },
+    "then": {
+      "effect": "deny"
+    }
+  }
+}

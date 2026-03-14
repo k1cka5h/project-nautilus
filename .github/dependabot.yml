@@ -1,0 +1,62 @@
+version: 2
+
+updates:
+  # ── GitHub Actions ──────────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - github-actions
+
+  # ── Python construct library ────────────────────────────────────────────────
+  - package-ecosystem: pip
+    directory: /constructs/python
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - python
+
+  # ── TypeScript construct library ────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /constructs/typescript
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - typescript
+
+  # ── Go construct library ────────────────────────────────────────────────────
+  - package-ecosystem: gomod
+    directory: /constructs/go
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - go
+
+  # ── Java construct library ──────────────────────────────────────────────────
+  - package-ecosystem: maven
+    directory: /constructs/java
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - java
+
+  # ── C# construct library ────────────────────────────────────────────────────
+  - package-ecosystem: nuget
+    directory: /constructs/csharp
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - csharp

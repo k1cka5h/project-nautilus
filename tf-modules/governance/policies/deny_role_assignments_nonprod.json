@@ -1,0 +1,20 @@
+{
+  "mode": "All",
+  "displayName": "Deny RBAC permission changes (non-dev)",
+  "description": "Prevents developer stacks from creating or modifying role assignments and role definitions in staging and prod. All RBAC in those environments is managed by the platform team. Assign only to staging and prod subscriptions.",
+  "policyRule": {
+    "if": {
+      "field": "type",
+      "in": [
+        "Microsoft.Authorization/roleAssignments",
+        "Microsoft.Authorization/roleDefinitions",
+        "Microsoft.Authorization/policyAssignments",
+        "Microsoft.Authorization/policyDefinitions",
+        "Microsoft.ManagedIdentity/userAssignedIdentities"
+      ]
+    },
+    "then": {
+      "effect": "deny"
+    }
+  }
+}

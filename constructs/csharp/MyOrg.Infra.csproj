@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MyOrg.Infra</RootNamespace>
+    <AssemblyName>MyOrg.Infra</AssemblyName>
+    <Version>1.4.0</Version>
+    <Description>Platform-managed CDKTF construct library for Azure</Description>
+    <RepositoryUrl>https://github.com/myorg/myorg-infra-dotnet</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HashiCorp.Cdktf"                    Version="0.20.*" />
+    <PackageReference Include="HashiCorp.Cdktf.Providers.Azurerm" Version="12.*"   />
+  </ItemGroup>
+
+</Project>

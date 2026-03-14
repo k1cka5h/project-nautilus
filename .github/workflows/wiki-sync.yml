@@ -1,0 +1,48 @@
+name: Wiki sync
+
+# Mirrors the wiki/ directory in this repo to the GitHub wiki
+# whenever docs are updated on main.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wiki/**"
+
+permissions:
+  contents: write   # push to the wiki repo
+
+jobs:
+  sync:
+    name: Sync wiki/
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Checkout wiki repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki-repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy docs to wiki repo
+        run: |
+          rsync -av --delete \
+            --exclude='.git/' \
+            wiki/ wiki-repo/
+
+      - name: Commit and push
+        working-directory: wiki-repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to sync."
+          else
+            git commit -m "docs: sync wiki from ${{ github.sha }}"
+            git push
+          fi

@@ -1,0 +1,12 @@
+{
+  "language": "csharp",
+  "app": "dotnet run",
+  "projectId": "myapp-cdktf-csharp",
+  "sendCrashReports": "false",
+  "terraformProviders": [],
+  "terraformModules": [],
+  "context": {
+    "excludeStackIdFromLogicalIds": "true",
+    "allowSepCharsInLogicalIds": "true"
+  }
+}

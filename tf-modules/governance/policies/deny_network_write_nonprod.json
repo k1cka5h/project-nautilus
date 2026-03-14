@@ -1,0 +1,27 @@
+{
+  "mode": "All",
+  "displayName": "Deny network resource writes (non-dev)",
+  "description": "Prevents developer service principals from creating or modifying network infrastructure in staging and prod. Network in those environments is centrally managed by the platform team. Assign only to staging and prod subscriptions.",
+  "policyRule": {
+    "if": {
+      "field": "type",
+      "in": [
+        "Microsoft.Network/virtualNetworks",
+        "Microsoft.Network/virtualNetworks/subnets",
+        "Microsoft.Network/networkSecurityGroups",
+        "Microsoft.Network/networkSecurityGroups/securityRules",
+        "Microsoft.Network/routeTables",
+        "Microsoft.Network/routeTables/routes",
+        "Microsoft.Network/privateDnsZones",
+        "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+        "Microsoft.Network/privateEndpoints",
+        "Microsoft.Network/virtualNetworkGateways",
+        "Microsoft.Network/localNetworkGateways",
+        "Microsoft.Network/connections"
+      ]
+    },
+    "then": {
+      "effect": "deny"
+    }
+  }
+}

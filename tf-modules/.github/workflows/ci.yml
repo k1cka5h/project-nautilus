@@ -1,0 +1,76 @@
+name: Module CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate all modules
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive modules/
+
+      - name: Validate networking module
+        run: |
+          terraform init -backend=false
+          terraform validate
+        working-directory: modules/networking
+
+      - name: Validate database/postgres module
+        run: |
+          terraform init -backend=false
+          terraform validate
+        working-directory: modules/database/postgres
+
+      - name: Validate compute/aks module
+        run: |
+          terraform init -backend=false
+          terraform validate
+        working-directory: modules/compute/aks
+
+  test:
+    name: Test all modules
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+
+      - name: Test networking module
+        run: terraform test
+        working-directory: modules/networking
+
+      - name: Test database/postgres module
+        run: terraform test
+        working-directory: modules/database/postgres
+
+      - name: Test compute/aks module
+        run: terraform test
+        working-directory: modules/compute/aks
+
+  tag-check:
+    name: Enforce semver tags on release
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Validate tag format
+        run: |
+          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag must follow vMAJOR.MINOR.PATCH (got ${{ github.ref_name }})"
+            exit 1
+          fi

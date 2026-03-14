@@ -1,0 +1,12 @@
+{
+  "language": "python",
+  "app": "python stacks/myapp_stack.py",
+  "projectId": "myapp-cdktf-python",
+  "sendCrashReports": "false",
+  "terraformProviders": [],
+  "terraformModules": [],
+  "context": {
+    "excludeStackIdFromLogicalIds": "true",
+    "allowSepCharsInLogicalIds": "true"
+  }
+}

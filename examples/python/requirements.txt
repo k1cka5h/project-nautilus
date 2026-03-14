@@ -1,0 +1,3 @@
+# Install from the internal PyPI mirror:
+#   pip install -r requirements.txt --index-url https://pkgs.myorg.internal/simple
+myorg-infra==1.4.0
