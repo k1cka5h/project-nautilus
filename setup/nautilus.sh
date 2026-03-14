@@ -22,6 +22,39 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CONFIGS_DIR="${SCRIPT_DIR}/configs"
 APPLY_SCRIPT="${SCRIPT_DIR}/apply-repo-config.sh"
 
+# The GitHub slug currently embedded in this repo's files.
+# When you fork and rename, this becomes your org slug automatically.
+REFERENCE_SLUG="nautilus"
+NAUTILUS_REPO="https://github.com/${REFERENCE_SLUG}/project-nautilus.git"
+
+# ── Bootstrap (standalone mode) ───────────────────────────────────────────────
+# If configs/ doesn't exist next to this script, we're running in standalone
+# mode (e.g. downloaded via curl). Clone the repo first, then re-exec.
+_maybe_bootstrap() {
+  if [[ -f "${CONFIGS_DIR}/terraform-modules.json" ]]; then
+    return  # Already inside a project-nautilus repo — nothing to do.
+  fi
+
+  echo ""
+  echo "  🐚  Nautilus — standalone bootstrap"
+  echo ""
+  echo "     This script requires the project-nautilus repository."
+  echo "     It will be cloned to a directory of your choice."
+  echo ""
+  printf "     Clone to [%s/nautilus]: " "${PWD}"
+  read -r _clone_dir
+  _clone_dir="${_clone_dir:-${PWD}/nautilus}"
+
+  if [[ -d "${_clone_dir}" ]]; then
+    echo "     Directory already exists — using existing clone."
+  else
+    git clone "${NAUTILUS_REPO}" "${_clone_dir}"
+  fi
+
+  exec bash "${_clone_dir}/setup/nautilus.sh" "$@"
+}
+_maybe_bootstrap "$@"
+
 # ── Theme ─────────────────────────────────────────────────────────────────────
 TEAL='\033[0;36m'
 LTEAL='\033[1;36m'
@@ -244,6 +277,80 @@ setup_org() {
     fail "Organization '${ORG}' not found or not accessible with current credentials."
   fi
   ok "github.com/${ORG}"
+  _rename_codebase
+}
+
+_ucfirst() {
+  # Portable capitalize-first-char — works on bash 3.2 (macOS default)
+  local s="$1"
+  printf '%s%s' "$(echo "${s:0:1}" | tr '[:lower:]' '[:upper:]')" "${s:1}"
+}
+
+_rename_codebase() {
+  [[ "${ORG}" == "${REFERENCE_SLUG}" ]] && return  # Nothing to rename.
+
+  local REF_CAP ORG_CAP
+  REF_CAP="$(_ucfirst "${REFERENCE_SLUG}")"
+  ORG_CAP="$(_ucfirst "${ORG}")"
+
+  sep
+  section "Renaming Codebase"
+  info "Replacing '${REFERENCE_SLUG}' → '${ORG}' throughout source files."
+  info "This is a one-time step — the files in ${PROJECT_ROOT} will be updated."
+  echo ""
+
+  if ! confirm "Rename codebase now?"; then
+    warn "Skipped. The code pushed to repos may still contain '${REFERENCE_SLUG}' references."
+    return
+  fi
+
+  # Content replacement — order matters (specific patterns before generic)
+  LC_ALL=C find "${PROJECT_ROOT}" \
+    -not -path "${PROJECT_ROOT}/.git/*" \
+    -not -path "${PROJECT_ROOT}/cdktf/*" \
+    -type f \
+    \( -name "*.tf" -o -name "*.yml" -o -name "*.yaml" -o -name "*.json" \
+       -o -name "*.py"  -o -name "*.ts"  -o -name "*.go"   -o -name "*.java" \
+       -o -name "*.cs"  -o -name "*.md"  -o -name "*.toml" -o -name "*.hcl" \
+       -o -name "*.xml" -o -name "*.mod" -o -name "*.txt"  -o -name "*.sh" \
+       -o -name "*.rego" -o -name "*.csproj" -o -name "CODEOWNERS*" \) \
+    -print0 | xargs -0 sed -i '' \
+      -e "s/${REFERENCE_SLUG}_infra/${ORG}_infra/g" \
+      -e "s/${REFERENCE_SLUG}-infra/${ORG}-infra/g" \
+      -e "s/com\.${REFERENCE_SLUG}/com.${ORG}/g" \
+      -e "s/com\/${REFERENCE_SLUG}/com\/${ORG}/g" \
+      -e "s/@${REFERENCE_SLUG}\\//@${ORG}\//g" \
+      -e "s/${REF_CAP}/${ORG_CAP}/g" \
+      -e "s/${REFERENCE_SLUG}/${ORG}/g" 2>/dev/null || true
+
+  # Directory renames (Python package, Java, C#)
+  local py_old="${PROJECT_ROOT}/constructs/python/${REFERENCE_SLUG}_infra"
+  local py_new="${PROJECT_ROOT}/constructs/python/${ORG}_infra"
+  [[ -d "${py_old}" && ! -d "${py_new}" ]] && mv "${py_old}" "${py_new}"
+
+  local cs_proj_old="${PROJECT_ROOT}/constructs/csharp/${REF_CAP}.Infra.csproj"
+  local cs_proj_new="${PROJECT_ROOT}/constructs/csharp/${ORG_CAP}.Infra.csproj"
+  [[ -f "${cs_proj_old}" && ! -f "${cs_proj_new}" ]] && mv "${cs_proj_old}" "${cs_proj_new}"
+
+  local cs_test_old="${PROJECT_ROOT}/constructs/csharp/${REF_CAP}.Infra.Tests"
+  local cs_test_new="${PROJECT_ROOT}/constructs/csharp/${ORG_CAP}.Infra.Tests"
+  [[ -d "${cs_test_old}" && ! -d "${cs_test_new}" ]] && mv "${cs_test_old}" "${cs_test_new}"
+
+  local cs_csproj_old="${cs_test_new}/${REF_CAP}.Infra.Tests.csproj"
+  local cs_csproj_new="${cs_test_new}/${ORG_CAP}.Infra.Tests.csproj"
+  [[ -f "${cs_csproj_old}" && ! -f "${cs_csproj_new}" ]] && mv "${cs_csproj_old}" "${cs_csproj_new}"
+
+  for java_root in \
+    "${PROJECT_ROOT}/constructs/java/src/main/java/com" \
+    "${PROJECT_ROOT}/constructs/java/src/test/java/com" \
+    "${PROJECT_ROOT}/examples/java/src/main/java/com"; do
+    [[ -d "${java_root}/${REFERENCE_SLUG}" && ! -d "${java_root}/${ORG}" ]] && \
+      mv "${java_root}/${REFERENCE_SLUG}" "${java_root}/${ORG}"
+  done
+
+  # Update REFERENCE_SLUG so subsequent re-runs are idempotent
+  REFERENCE_SLUG="${ORG}"
+  ok "Codebase renamed to '${ORG}'"
 }
 
 # ── Platform team ─────────────────────────────────────────────────────────────

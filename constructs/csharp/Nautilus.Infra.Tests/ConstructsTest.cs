@@ -2,7 +2,7 @@ using System.Text.Json;
 using HashiCorp.Cdktf;
 using Xunit;
 
-namespace K1cka5h.Infra.Tests;
+namespace Nautilus.Infra.Tests;
 
 /// <summary>
 /// Construct unit tests — C#
@@ -11,7 +11,7 @@ namespace K1cka5h.Infra.Tests;
 /// correctly. Does not run Terraform or touch Azure.
 ///
 /// Run:
-///   dotnet test K1cka5h.Infra.Tests/
+///   dotnet test Nautilus.Infra.Tests/
 /// </summary>
 public class ConstructsTest
 {

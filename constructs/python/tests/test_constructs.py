@@ -14,7 +14,7 @@ import pytest
 from constructs import Construct
 from cdktf import App, Testing, TerraformStack
 
-from k1cka5h_infra import (
+from nautilus_infra import (
     BaseAzureStack,
     NetworkConstruct, SubnetConfig, SubnetDelegation,
     DatabaseConstruct, PostgresConfig,

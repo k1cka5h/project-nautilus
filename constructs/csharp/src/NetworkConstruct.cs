@@ -1,8 +1,8 @@
 using Constructs;
 using HashiCorp.Cdktf;
-using K1cka5h.Infra.Policy;
+using Nautilus.Infra.Policy;
 
-namespace K1cka5h.Infra;
+namespace Nautilus.Infra;
 
 public record SubnetDelegation(string Name, string Service, string[] Actions);
 
@@ -54,7 +54,7 @@ public class NetworkConstruct : Construct
 
         _module = new TerraformModule(this, "networking", new TerraformModuleConfig
         {
-            Source = "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
+            Source = "git::ssh://git@github.com/nautilus/terraform-modules.git" +
                      "//modules/networking?ref=v1.4.0",
             Variables = new Dictionary<string, object>
             {

@@ -53,11 +53,11 @@ project-nautilus/
 │   └── tests/                      Pytest suite — validates all workflow structure
 │
 ├── constructs/                     Construct libraries, one per language
-│   ├── python/                     k1cka5h-infra — published to internal PyPI
-│   ├── typescript/                 @k1cka5h/infra — published to internal npm
-│   ├── csharp/                     K1cka5h.Infra — published to internal NuGet
-│   ├── java/                       com.k1cka5h:infra — published to internal Maven
-│   └── go/                         github.com/k1cka5h/infra-go — internal Go proxy
+│   ├── python/                     nautilus-infra — published to internal PyPI
+│   ├── typescript/                 @nautilus/infra — published to internal npm
+│   ├── csharp/                     Nautilus.Infra — published to internal NuGet
+│   ├── java/                       com.nautilus:infra — published to internal Maven
+│   └── go/                         github.com/nautilus/infra-go — internal Go proxy
 │
 ├── policy/                         OPA/conftest policies (gate every terraform plan)
 │   ├── deny_public_resources.rego
@@ -127,10 +127,6 @@ Before implementing Nautilus, your organization needs:
 
 **GitHub**
 - A GitHub organization with Actions enabled
-- At least three repositories: one for `terraform-modules`, one for
-  `reusable-workflows`, and one per product team (the `tf-azure/` layout is the
-  template)
-- GitHub Environments configured with required reviewers for `stage` and `prod`
 
 **Azure**
 - An Azure subscription per environment (dev, staging, prod) per product team, or
@@ -147,7 +143,6 @@ Before implementing Nautilus, your organization needs:
 
 **Tooling (platform team machines)**
 - Terraform ≥ 1.7 (for `mock_provider` in `.tftest.hcl` tests)
-- CDKTF CLI 0.20+
 - OPA / conftest CLI (for running policy tests locally)
 - Azure CLI (`az`)
 
@@ -155,19 +150,34 @@ Before implementing Nautilus, your organization needs:
 
 ## Implementation sequence
 
-### 1. Fork and run the setup wizard
+### 1. Run the setup wizard
 
-Fork this repository, then run the interactive setup wizard. It handles
-everything in steps 2–7 below — repo creation, branch protection, team setup,
-code push, and optionally the Azure bootstrap — in a single guided session:
+The interactive setup wizard handles everything in steps 2–7 below — repo
+creation, branch protection, team setup, code push, and optionally the Azure
+bootstrap — in a single guided session. No fork required.
+
+**Option A — run directly from the internet (recommended):**
 
 ```bash
-bash setup/nautilus.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/nautilus/project-nautilus/main/setup/nautilus.sh)
+```
+
+> **Why `bash <(...)` and not `curl | bash`?** The wizard is interactive — it
+> reads from stdin for every prompt. Piping from `curl` would consume stdin and
+> break all input. Process substitution (`<(...)`) feeds the script as a file
+> descriptor instead, leaving stdin free for the user.
+
+**Option B — run from a local clone:**
+
+```bash
+git clone https://github.com/nautilus/project-nautilus.git
+bash project-nautilus/setup/nautilus.sh
 ```
 
 The wizard authenticates via GitHub device flow, prompts for your organization
-slug and product team name, and walks through each phase with selectable options.
-If you prefer to run steps manually, continue with 2–7 below.
+slug and product team name, renames the codebase to your org, and walks through
+each phase with selectable options. If you prefer to run steps manually,
+continue with 2–7 below.
 
 **Prerequisites:** `gh` CLI, `jq`, `git`. Terraform is optional (needed for
 Azure bootstrap, which the wizard can also run inline).
@@ -176,7 +186,7 @@ Azure bootstrap, which the wizard can also run inline).
 
 ### Manual steps (alternative to the wizard)
 
-After forking, replace `k1cka5h` throughout with your organization slug.
+After forking, replace `nautilus` throughout with your organization slug.
 Key locations to update:
 
 | File | What to change |
@@ -184,9 +194,9 @@ Key locations to update:
 | `constructs/*/` source files | Package names, import paths |
 | `constructs/*/pyproject.toml`, `package.json`, `pom.xml`, etc. | Package name, registry URL |
 | `tf-modules/modules/*/main.tf` | Any org-specific defaults |
-| `reusable-workflows/.github/workflows/*.yml` | `k1cka5h/terraform-modules` source refs |
-| `tf-azure/.github/workflows/infra.yml` | `k1cka5h/reusable-workflows` refs |
-| `wiki/` | All references to `k1cka5h`, `pkgs.k1cka5h.internal`, `#platform-infra` |
+| `reusable-workflows/.github/workflows/*.yml` | `nautilus/terraform-modules` source refs |
+| `tf-azure/.github/workflows/infra.yml` | `nautilus/reusable-workflows` refs |
+| `wiki/` | All references to `nautilus`, `pkgs.nautilus.internal`, `#platform-infra` |
 
 ### 2. Run the platform bootstrap
 
@@ -198,7 +208,7 @@ cd bootstrap/platform
 terraform init
 terraform apply \
   -var="platform_subscription_id=<platform-sub-id>" \
-  -var="github_org=k1cka5h" \
+  -var="github_org=nautilus" \
   -var="github_repo=project-nautilus"
 ```
 
@@ -220,7 +230,7 @@ terraform init \
   -backend-config="use_oidc=true"
 terraform apply \
   -var="product_name=portal" \
-  -var="github_org=k1cka5h" \
+  -var="github_org=nautilus" \
   -var="github_repo=portal-infra" \
   -var='subscription_ids={"dev":"<id>","qa":"<id>","stage":"<id>","prod":"<id>"}' \
   -var="state_storage_account_id=<from platform output>" \

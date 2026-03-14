@@ -1,7 +1,7 @@
 name: Terraform Deploy
 
 # Reusable workflow — call with:
-#   uses: k1cka5h/reusable-workflows/.github/workflows/tf-deploy.yml@main
+#   uses: nautilus/reusable-workflows/.github/workflows/tf-deploy.yml@main
 #   with:
 #     environment:    prod
 #     var_file:       prod/terraform.tfvars
@@ -27,7 +27,7 @@ name: Terraform Deploy
 #
 #   deploy-prod:
 #     needs: gate-prod
-#     uses: k1cka5h/reusable-workflows/.github/workflows/tf-deploy.yml@main
+#     uses: nautilus/reusable-workflows/.github/workflows/tf-deploy.yml@main
 
 on:
   workflow_call:

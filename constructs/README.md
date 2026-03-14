@@ -6,11 +6,11 @@ constructs it exports. The platform team owns all code here.
 
 ```
 constructs/
-├── python/       k1cka5h-infra          → internal PyPI
-├── typescript/   @k1cka5h/infra         → internal npm
-├── csharp/       K1cka5h.Infra          → internal NuGet
-├── java/         com.k1cka5h:infra      → internal Maven
-└── go/           github.com/k1cka5h/infra-go  → internal Go proxy
+├── python/       nautilus-infra          → internal PyPI
+├── typescript/   @nautilus/infra         → internal npm
+├── csharp/       Nautilus.Infra          → internal NuGet
+├── java/         com.nautilus:infra      → internal Maven
+└── go/           github.com/nautilus/infra-go  → internal Go proxy
 ```
 
 Each library wraps the same three platform Terraform modules
@@ -42,11 +42,11 @@ are optional — instantiate only what the team needs.
 
 | Language | Package | Registry | Install |
 |----------|---------|---------|---------|
-| Python | `k1cka5h-infra` | `https://pkgs.k1cka5h.internal/simple` | `pip install k1cka5h-infra==<version>` |
-| TypeScript | `@k1cka5h/infra` | `https://npm.k1cka5h.internal` | `npm install @k1cka5h/infra@<version>` |
-| C# | `K1cka5h.Infra` | `https://nuget.k1cka5h.internal/v3/index.json` | `dotnet add package K1cka5h.Infra --version <version>` |
-| Java | `com.k1cka5h:infra` | `https://maven.k1cka5h.internal` | Add to `pom.xml` — see library README |
-| Go | `github.com/k1cka5h/infra-go` | `https://goproxy.k1cka5h.internal` | `go get github.com/k1cka5h/infra-go@v<version>` |
+| Python | `nautilus-infra` | `https://pkgs.nautilus.internal/simple` | `pip install nautilus-infra==<version>` |
+| TypeScript | `@nautilus/infra` | `https://npm.nautilus.internal` | `npm install @nautilus/infra@<version>` |
+| C# | `Nautilus.Infra` | `https://nuget.nautilus.internal/v3/index.json` | `dotnet add package Nautilus.Infra --version <version>` |
+| Java | `com.nautilus:infra` | `https://maven.nautilus.internal` | Add to `pom.xml` — see library README |
+| Go | `github.com/nautilus/infra-go` | `https://goproxy.nautilus.internal` | `go get github.com/nautilus/infra-go@v<version>` |
 
 See each library's `README.md` for language-specific install and usage examples.
 
@@ -97,7 +97,7 @@ npm install && npm test
 
 # C#
 cd constructs/csharp
-dotnet test K1cka5h.Infra.Tests/
+dotnet test Nautilus.Infra.Tests/
 
 # Java
 cd constructs/java
@@ -122,7 +122,7 @@ be added to all five libraries before the release is tagged. Steps:
 
 1. Add the construct file to each library following existing patterns.
 2. Update the language-specific export surface:
-   - **Python**: `k1cka5h_infra/constructs/__init__.py` and `k1cka5h_infra/__init__.py`
+   - **Python**: `nautilus_infra/constructs/__init__.py` and `nautilus_infra/__init__.py`
    - **TypeScript**: `src/index.ts`
    - **C#**: add a new class file (no explicit export needed)
    - **Java**: add a new class file (no explicit export needed)

@@ -1,4 +1,4 @@
-namespace K1cka5h.Infra.Policy;
+namespace Nautilus.Infra.Policy;
 
 /// <summary>
 /// Required tagging policy.

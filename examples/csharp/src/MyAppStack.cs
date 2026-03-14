@@ -12,8 +12,8 @@ using System;
 using System.Collections.Generic;
 using Constructs;
 using HashiCorp.Cdktf;
-using K1cka5h.Infra;
-using K1cka5h.Infra.Constructs;
+using Nautilus.Infra;
+using Nautilus.Infra.Constructs;
 
 namespace MyApp.Infra;
 

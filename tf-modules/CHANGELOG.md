@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `k1cka5h/terraform-modules` are documented here.
+All notable changes to `nautilus/terraform-modules` are documented here.
 Versions follow [Semantic Versioning](https://semver.org/).
 
 Breaking changes are announced in **#platform-infra** (Slack) with a migration guide

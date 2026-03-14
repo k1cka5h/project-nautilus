@@ -65,7 +65,7 @@ terraform init
 
 terraform apply \
   -var="platform_subscription_id=<platform-subscription-id>" \
-  -var="github_org=k1cka5h" \
+  -var="github_org=nautilus" \
   -var="github_repo=project-nautilus"
 ```
 
@@ -112,7 +112,7 @@ terraform init \
 
 terraform apply \
   -var="product_name=portal" \
-  -var="github_org=k1cka5h" \
+  -var="github_org=nautilus" \
   -var="github_repo=portal-infra" \
   -var='subscription_ids={"dev":"<id>","qa":"<id>","stage":"<id>","prod":"<id>"}' \
   -var="state_storage_account_id=<from platform output>" \

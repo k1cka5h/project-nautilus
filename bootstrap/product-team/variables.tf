@@ -9,7 +9,7 @@ variable "product_name" {
 }
 
 variable "github_org" {
-  description = "GitHub organization slug (e.g. k1cka5h)."
+  description = "GitHub organization slug (e.g. nautilus)."
   type        = string
 }
 

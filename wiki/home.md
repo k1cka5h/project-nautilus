@@ -47,11 +47,11 @@ project-nautilus/
 │   └── tests/                      Pytest suite validating all workflow YAML
 │
 ├── constructs/                     Construct libraries, one per language
-│   ├── python/                     k1cka5h-infra → internal PyPI
-│   ├── typescript/                 @k1cka5h/infra → internal npm
-│   ├── csharp/                     K1cka5h.Infra → internal NuGet
-│   ├── java/                       com.k1cka5h:infra → internal Maven
-│   └── go/                         github.com/k1cka5h/infra-go → internal Go proxy
+│   ├── python/                     nautilus-infra → internal PyPI
+│   ├── typescript/                 @nautilus/infra → internal npm
+│   ├── csharp/                     Nautilus.Infra → internal NuGet
+│   ├── java/                       com.nautilus:infra → internal Maven
+│   └── go/                         github.com/nautilus/infra-go → internal Go proxy
 │
 ├── policy/                         OPA/conftest policies
 │   ├── deny_public_resources.rego

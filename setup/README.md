@@ -5,7 +5,19 @@ Everything needed to provision a complete Nautilus implementation from scratch.
 ## 🐚 Quick start — the Nautilus wizard
 
 **`nautilus.sh` is the primary entry point.** It is an interactive, Nautilus-themed
-wizard that handles the complete implementation in a single guided session:
+wizard that handles the complete implementation in a single guided session.
+No fork required — it can be run directly from the internet:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/nautilus/project-nautilus/main/setup/nautilus.sh)
+```
+
+> **Why `bash <(...)` and not `curl | bash`?** The wizard reads from stdin for
+> every prompt. Piping from `curl` would consume stdin and break all input.
+> Process substitution (`<(...)`) feeds the script as a file descriptor,
+> leaving stdin free for interactive use.
+
+Or, if you already have the repo cloned:
 
 ```bash
 bash setup/nautilus.sh
@@ -14,10 +26,11 @@ bash setup/nautilus.sh
 The wizard will:
 1. Check prerequisites (`gh`, `jq`, `git`, `terraform`)
 2. Authenticate to GitHub via device flow
-3. Create all platform repositories in your org
-4. Push source code scaffolding to each repo
-5. Apply branch protection, environments, labels, CODEOWNERS, and templates
-6. Optionally run the Azure bootstrap inline
+3. Prompt for your organization slug and rename the codebase automatically
+4. Create all platform repositories in your org
+5. Push source code scaffolding to each repo
+6. Apply branch protection, environments, labels, CODEOWNERS, and templates
+7. Optionally run the Azure bootstrap inline
 
 No manual steps are required. After the wizard completes, the only remaining
 work is setting Azure secrets (printed by the bootstrap Terraform output).
@@ -85,19 +98,19 @@ bash setup/scripts/apply-repo-config.sh <org> <repo> <config-file> [--dry-run]
 ```bash
 # Apply platform config to the Terraform modules repo
 bash setup/scripts/apply-repo-config.sh \
-  k1cka5h terraform-modules setup/configs/terraform-modules.json
+  nautilus terraform-modules setup/configs/terraform-modules.json
 
 # Apply construct library config to the Python library repo
 bash setup/scripts/apply-repo-config.sh \
-  k1cka5h k1cka5h-infra-python setup/configs/construct-library.json
+  nautilus nautilus-infra-python setup/configs/construct-library.json
 
 # Apply product team config when onboarding a new team
 bash setup/scripts/apply-repo-config.sh \
-  k1cka5h portal-infra setup/configs/product-team.json
+  nautilus portal-infra setup/configs/product-team.json
 
 # Dry run — print what would happen without making any changes
 bash setup/scripts/apply-repo-config.sh \
-  k1cka5h portal-infra setup/configs/product-team.json --dry-run
+  nautilus portal-infra setup/configs/product-team.json --dry-run
 ```
 
 ### What the script does
@@ -145,8 +158,8 @@ rerun the script against it — the script is idempotent.
 
 | Item | How to handle it |
 |------|-----------------|
-| Creating the GitHub repository | `gh repo create k1cka5h/<repo> --private` or GitHub UI |
-| Adding `REGISTRY_TOKEN` secret (construct repos) | `gh secret set REGISTRY_TOKEN --repo k1cka5h/<repo>` |
+| Creating the GitHub repository | `gh repo create nautilus/<repo> --private` or GitHub UI |
+| Adding `REGISTRY_TOKEN` secret (construct repos) | `gh secret set REGISTRY_TOKEN --repo nautilus/<repo>` |
 | Adding product team Azure secrets | From `terraform output github_secrets` in `bootstrap/product-team/` |
 | Adding `TF_MODULES_DEPLOY_KEY` | See [wiki/platform-module-maintenance.md](../wiki/platform-module-maintenance.md#provisioning-a-deploy-key-for-a-new-product-team) |
 | Inviting product team members | GitHub org member management |

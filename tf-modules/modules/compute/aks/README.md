@@ -13,7 +13,7 @@ workloads cannot schedule on it. Add a dedicated node pool for application pods.
 ## Usage (via CDKTF construct)
 
 ```python
-from k1cka5h_infra import AksConstruct, AksConfig, NodePoolConfig
+from nautilus_infra import AksConstruct, AksConfig, NodePoolConfig
 
 cluster = AksConstruct(
     self, "aks",

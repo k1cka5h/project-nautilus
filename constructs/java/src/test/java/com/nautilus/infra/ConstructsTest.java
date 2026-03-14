@@ -1,11 +1,11 @@
-package com.k1cka5h.infra;
+package com.nautilus.infra;
 
 import com.hashicorp.cdktf.App;
 import com.hashicorp.cdktf.Testing;
 import com.hashicorp.cdktf.TerraformStack;
-import com.k1cka5h.infra.constructs.AksConstruct;
-import com.k1cka5h.infra.constructs.DatabaseConstruct;
-import com.k1cka5h.infra.constructs.NetworkConstruct;
+import com.nautilus.infra.constructs.AksConstruct;
+import com.nautilus.infra.constructs.DatabaseConstruct;
+import com.nautilus.infra.constructs.NetworkConstruct;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

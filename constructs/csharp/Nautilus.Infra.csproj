@@ -4,11 +4,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>K1cka5h.Infra</RootNamespace>
-    <AssemblyName>K1cka5h.Infra</AssemblyName>
+    <RootNamespace>Nautilus.Infra</RootNamespace>
+    <AssemblyName>Nautilus.Infra</AssemblyName>
     <Version>1.4.0</Version>
     <Description>Platform-managed CDKTF construct library for Azure</Description>
-    <RepositoryUrl>https://github.com/k1cka5h/k1cka5h-infra-dotnet</RepositoryUrl>
+    <RepositoryUrl>https://github.com/nautilus/nautilus-infra-dotnet</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

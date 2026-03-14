@@ -1,9 +1,9 @@
-# terraform-modules (k1cka5h/terraform-modules)
+# terraform-modules (nautilus/terraform-modules)
 
 **Platform team owned. Do not modify directly — open a GitHub issue or Jira ticket.**
 
 This repository contains the organization's approved Terraform modules for Azure.
-All modules are consumed via the `k1cka5h-infra` CDKTF construct library. Developers
+All modules are consumed via the `nautilus-infra` CDKTF construct library. Developers
 do not reference this repo directly.
 
 ## Module catalogue
@@ -17,11 +17,11 @@ do not reference this repo directly.
 ## Versioning
 
 Releases follow [Semantic Versioning](https://semver.org/) and are published as
-Git tags (`v1.4.0`, etc.). The `k1cka5h-infra` construct library pins a specific tag
+Git tags (`v1.4.0`, etc.). The `nautilus-infra` construct library pins a specific tag
 in each module's source URL:
 
 ```
-git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/networking?ref=v1.4.0
+git::ssh://git@github.com/nautilus/terraform-modules.git//modules/networking?ref=v1.4.0
 ```
 
 Consumers must never use `?ref=main` or omit the ref — this breaks reproducibility.

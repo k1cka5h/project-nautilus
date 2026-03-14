@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          registry-url: https://npm.k1cka5h.internal
+          registry-url: https://npm.nautilus.internal
 
       - name: Verify tag matches package version
         run: |

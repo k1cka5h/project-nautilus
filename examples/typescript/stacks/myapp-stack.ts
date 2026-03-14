@@ -21,7 +21,7 @@ import {
   AksConstruct,
   AksConfig,
   NodePoolConfig,
-} from "@k1cka5h/infra";
+} from "@nautilus/infra";
 
 const ENVIRONMENT     = process.env.ENVIRONMENT ?? "dev";
 const LOG_WORKSPACE_ID = process.env.LOG_WORKSPACE_ID ??

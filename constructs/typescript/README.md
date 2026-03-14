@@ -1,12 +1,12 @@
-# @k1cka5h/infra — TypeScript
+# @nautilus/infra — TypeScript
 
 Platform-managed CDKTF construct library for Azure. Published to the internal
-npm registry at `https://npm.k1cka5h.internal`.
+npm registry at `https://npm.nautilus.internal`.
 
 ## Install
 
 ```bash
-npm install @k1cka5h/infra@1.4.0 --registry https://npm.k1cka5h.internal
+npm install @nautilus/infra@1.4.0 --registry https://npm.nautilus.internal
 ```
 
 ## Constructs
@@ -30,5 +30,5 @@ npm test
 
 ```bash
 npm run build
-npm publish --registry https://npm.k1cka5h.internal
+npm publish --registry https://npm.nautilus.internal
 ```

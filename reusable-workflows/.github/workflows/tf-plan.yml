@@ -1,7 +1,7 @@
 name: Terraform Plan
 
 # Reusable workflow — call with:
-#   uses: k1cka5h/reusable-workflows/.github/workflows/tf-plan.yml@main
+#   uses: nautilus/reusable-workflows/.github/workflows/tf-plan.yml@main
 #   with:
 #     environment:    dev
 #     var_file:       dev/terraform.tfvars

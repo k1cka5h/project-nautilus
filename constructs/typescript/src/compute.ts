@@ -3,7 +3,7 @@ import { TerraformModule } from "cdktf";
 import { requiredTags } from "./policy/tagging";
 
 const MODULE_SOURCE =
-  "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
+  "git::ssh://git@github.com/nautilus/terraform-modules.git" +
   "//modules/compute/aks?ref=v1.4.0";
 
 export interface NodePoolConfig {

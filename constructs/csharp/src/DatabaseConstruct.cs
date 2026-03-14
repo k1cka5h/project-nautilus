@@ -1,8 +1,8 @@
 using Constructs;
 using HashiCorp.Cdktf;
-using K1cka5h.Infra.Policy;
+using Nautilus.Infra.Policy;
 
-namespace K1cka5h.Infra;
+namespace Nautilus.Infra;
 
 public record PostgresConfig(
     string[] Databases,
@@ -39,7 +39,7 @@ public class DatabaseConstruct : Construct
 
         _module = new TerraformModule(this, "postgres", new TerraformModuleConfig
         {
-            Source = "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
+            Source = "git::ssh://git@github.com/nautilus/terraform-modules.git" +
                      "//modules/database/postgres?ref=v1.4.0",
             Variables = new Dictionary<string, object>
             {

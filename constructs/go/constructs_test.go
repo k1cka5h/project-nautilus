@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	infra "github.com/k1cka5h/infra-go"
+	infra "github.com/nautilus/infra-go"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 	"github.com/hashicorp/terraform-cdk-go/cdktf"
@@ -70,7 +70,7 @@ func TestNetworkConstruct_ModuleSource(t *testing.T) {
 		t.Fatal("no 'networking' module in synth output")
 	}
 	src, _ := net["source"].(string)
-	const wantSrc = "git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/networking?ref=v1.4.0"
+	const wantSrc = "git::ssh://git@github.com/nautilus/terraform-modules.git//modules/networking?ref=v1.4.0"
 	if src != wantSrc {
 		t.Errorf("module source = %q, want %q", src, wantSrc)
 	}
@@ -117,7 +117,7 @@ func TestDatabaseConstruct_ModuleSource(t *testing.T) {
 	modules := result["module"].(map[string]interface{})
 	db := modules["database"].(map[string]interface{})
 	src, _ := db["source"].(string)
-	const wantSrc = "git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/database/postgres?ref=v1.4.0"
+	const wantSrc = "git::ssh://git@github.com/nautilus/terraform-modules.git//modules/database/postgres?ref=v1.4.0"
 	if src != wantSrc {
 		t.Errorf("module source = %q, want %q", src, wantSrc)
 	}
@@ -159,7 +159,7 @@ func TestAksConstruct_ModuleSource(t *testing.T) {
 	modules := result["module"].(map[string]interface{})
 	aks := modules["aks"].(map[string]interface{})
 	src, _ := aks["source"].(string)
-	const wantSrc = "git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/compute/aks?ref=v1.4.0"
+	const wantSrc = "git::ssh://git@github.com/nautilus/terraform-modules.git//modules/compute/aks?ref=v1.4.0"
 	if src != wantSrc {
 		t.Errorf("module source = %q, want %q", src, wantSrc)
 	}

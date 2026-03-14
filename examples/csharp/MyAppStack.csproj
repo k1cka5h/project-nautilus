@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="HashiCorp.Cdktf"  Version="0.20.*" />
-    <PackageReference Include="K1cka5h.Infra"      Version="1.4.0"  />
+    <PackageReference Include="Nautilus.Infra"      Version="1.4.0"  />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 # Module Maintenance
 
-How the platform team manages `k1cka5h/terraform-modules` — the private Terraform
+How the platform team manages `nautilus/terraform-modules` — the private Terraform
 module library that backs every Nautilus construct.
 
 ---
@@ -228,7 +228,7 @@ A new module is not useful until it has a CDKTF construct. Create a new construc
 file in each library under `constructs/` following the existing patterns. Update
 exports:
 
-- **Python**: `k1cka5h_infra/constructs/__init__.py` and `k1cka5h_infra/__init__.py`
+- **Python**: `nautilus_infra/constructs/__init__.py` and `nautilus_infra/__init__.py`
 - **TypeScript**: `src/index.ts`
 - **C#**: add a new class file (no explicit export needed)
 - **Java**: add a new class file (no explicit export needed)
@@ -307,7 +307,7 @@ is wired correctly. Run them when changing module variable or output names.
 ```bash
 cd constructs/python && pip install -e ".[dev]" && pytest tests/ -v
 cd constructs/typescript && npm install && npm test
-cd constructs/csharp && dotnet test K1cka5h.Infra.Tests/
+cd constructs/csharp && dotnet test Nautilus.Infra.Tests/
 cd constructs/java && mvn test --batch-mode
 cd constructs/go && go test ./...
 ```
@@ -357,9 +357,9 @@ Before tagging, update the module source string in each affected construct file
 across all five libraries and bump each package version to match:
 
 ```python
-# Python — constructs/python/k1cka5h_infra/constructs/network.py
+# Python — constructs/python/nautilus_infra/constructs/network.py
 _MODULE_SOURCE = (
-    "git::ssh://git@github.com/k1cka5h/terraform-modules.git"
+    "git::ssh://git@github.com/nautilus/terraform-modules.git"
     "//modules/networking?ref=v1.5.0"
 )
 ```
@@ -367,7 +367,7 @@ _MODULE_SOURCE = (
 ```typescript
 // TypeScript — constructs/typescript/src/network.ts
 const NETWORK_MODULE_SOURCE =
-  "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
+  "git::ssh://git@github.com/nautilus/terraform-modules.git" +
   "//modules/networking?ref=v1.5.0";
 ```
 
@@ -387,11 +387,11 @@ uploaded.
 
 | Language | Registry | Publish mechanism | Secret |
 |----------|---------|-------------------|--------|
-| Python | Internal PyPI (`pkgs.k1cka5h.internal`) | `twine upload` with `__token__` auth | `REGISTRY_TOKEN` |
-| TypeScript | Internal npm (`npm.k1cka5h.internal`) | `npm publish` via `NODE_AUTH_TOKEN` | `REGISTRY_TOKEN` |
-| Java | Internal Maven (`maven.k1cka5h.internal`) | `mvn deploy` with server credentials | `REGISTRY_TOKEN` |
-| C# | Internal NuGet (`nuget.k1cka5h.internal`) | `dotnet nuget push` with API key | `REGISTRY_TOKEN` |
-| Go | Internal Go proxy (`goproxy.k1cka5h.internal`) | Proxy cache warmed via HTTP request | `REGISTRY_TOKEN` |
+| Python | Internal PyPI (`pkgs.nautilus.internal`) | `twine upload` with `__token__` auth | `REGISTRY_TOKEN` |
+| TypeScript | Internal npm (`npm.nautilus.internal`) | `npm publish` via `NODE_AUTH_TOKEN` | `REGISTRY_TOKEN` |
+| Java | Internal Maven (`maven.nautilus.internal`) | `mvn deploy` with server credentials | `REGISTRY_TOKEN` |
+| C# | Internal NuGet (`nuget.nautilus.internal`) | `dotnet nuget push` with API key | `REGISTRY_TOKEN` |
+| Go | Internal Go proxy (`goproxy.nautilus.internal`) | Proxy cache warmed via HTTP request | `REGISTRY_TOKEN` |
 
 Go is different from the other four: Go modules are versioned by git tag, not a
 package manifest. The publish job warms the internal Athens proxy cache by
@@ -414,7 +414,7 @@ ensures it is only accessible to the publish job and only after a reviewer appro
 
 ## Access control
 
-The `k1cka5h/terraform-modules` repo is private.
+The `nautilus/terraform-modules` repo is private.
 
 | GitHub team | Access |
 |-------------|--------|
@@ -428,7 +428,7 @@ Each product repo has its own deploy key — keys are not shared across repos.
 
 ```bash
 # Generate a key pair (no passphrase)
-ssh-keygen -t ed25519 -C "github-actions@k1cka5h/<product>-infra" -f /tmp/tf_modules_key
+ssh-keygen -t ed25519 -C "github-actions@nautilus/<product>-infra" -f /tmp/tf_modules_key
 
 # Add public key as a read-only deploy key on the terraform-modules repo:
 #   Settings → Deploy keys → Add deploy key → Allow write access: NO
@@ -443,11 +443,11 @@ Rotate deploy keys annually and immediately on suspected compromise.
 
 ## Releasing reusable workflows
 
-The `k1cka5h/reusable-workflows` repo is versioned independently from the Terraform
+The `nautilus/reusable-workflows` repo is versioned independently from the Terraform
 modules. Calling workflows (`infra.yml`) pin a specific tag:
 
 ```yaml
-uses: k1cka5h/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+uses: nautilus/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
 ```
 
 ### When to cut a new release

@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 from ..policy.tagging import required_tags
 
 _MODULE_SOURCE = (
-    "git::ssh://git@github.com/k1cka5h/terraform-modules.git"
+    "git::ssh://git@github.com/nautilus/terraform-modules.git"
     "//modules/networking?ref=v1.4.0"
 )
 

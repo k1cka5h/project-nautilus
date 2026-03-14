@@ -56,13 +56,13 @@ terraform init
 # Review the plan
 terraform plan \
   -var="platform_subscription_id=<platform-subscription-id>" \
-  -var="github_org=k1cka5h" \
+  -var="github_org=nautilus" \
   -var="github_repo=project-nautilus"
 
 # Apply
 terraform apply \
   -var="platform_subscription_id=<platform-subscription-id>" \
-  -var="github_org=k1cka5h" \
+  -var="github_org=nautilus" \
   -var="github_repo=project-nautilus"
 ```
 
@@ -124,7 +124,7 @@ terraform init \
 
 terraform plan \
   -var="product_name=portal" \
-  -var="github_org=k1cka5h" \
+  -var="github_org=nautilus" \
   -var="github_repo=portal-infra" \
   -var='subscription_ids={"dev":"<dev-sub-id>","qa":"<qa-sub-id>","stage":"<stage-sub-id>","prod":"<prod-sub-id>"}' \
   -var="state_storage_account_id=<state_storage_account_id from platform output>" \
@@ -156,17 +156,17 @@ Set them via `gh secret set` or the GitHub UI:
 ```bash
 # SSH deploy key for terraform-modules
 gh secret set TF_MODULES_DEPLOY_KEY \
-  --repo k1cka5h/portal-infra \
+  --repo nautilus/portal-infra \
   --body "$(cat /path/to/tf_modules_key)"
 
 # PostgreSQL admin password
 gh secret set DB_ADMIN_PASSWORD \
-  --repo k1cka5h/portal-infra \
+  --repo nautilus/portal-infra \
   --body "$(openssl rand -base64 32)"
 
 # Log Analytics workspace resource ID
 gh secret set LOG_WORKSPACE_ID \
-  --repo k1cka5h/portal-infra \
+  --repo nautilus/portal-infra \
   --body "/subscriptions/.../workspaces/platform-logs"
 ```
 

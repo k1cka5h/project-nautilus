@@ -8,7 +8,7 @@
  *   ENVIRONMENT=dev DB_ADMIN_PASSWORD=... cdktf synth
  */
 
-package com.k1cka5h.myapp;
+package com.nautilus.myapp;
 
 import java.util.List;
 import java.util.Map;
@@ -18,19 +18,19 @@ import com.hashicorp.cdktf.App;
 import com.hashicorp.cdktf.TerraformOutput;
 import com.hashicorp.cdktf.TerraformOutputConfig;
 
-import com.k1cka5h.infra.BaseAzureStack;
-import com.k1cka5h.infra.BaseAzureStackProps;
-import com.k1cka5h.infra.constructs.NetworkConstruct;
-import com.k1cka5h.infra.constructs.NetworkConstructProps;
-import com.k1cka5h.infra.constructs.SubnetConfig;
-import com.k1cka5h.infra.constructs.SubnetDelegation;
-import com.k1cka5h.infra.constructs.DatabaseConstruct;
-import com.k1cka5h.infra.constructs.DatabaseConstructProps;
-import com.k1cka5h.infra.constructs.PostgresConfig;
-import com.k1cka5h.infra.constructs.AksConstruct;
-import com.k1cka5h.infra.constructs.AksConstructProps;
-import com.k1cka5h.infra.constructs.AksConfig;
-import com.k1cka5h.infra.constructs.NodePoolConfig;
+import com.nautilus.infra.BaseAzureStack;
+import com.nautilus.infra.BaseAzureStackProps;
+import com.nautilus.infra.constructs.NetworkConstruct;
+import com.nautilus.infra.constructs.NetworkConstructProps;
+import com.nautilus.infra.constructs.SubnetConfig;
+import com.nautilus.infra.constructs.SubnetDelegation;
+import com.nautilus.infra.constructs.DatabaseConstruct;
+import com.nautilus.infra.constructs.DatabaseConstructProps;
+import com.nautilus.infra.constructs.PostgresConfig;
+import com.nautilus.infra.constructs.AksConstruct;
+import com.nautilus.infra.constructs.AksConstructProps;
+import com.nautilus.infra.constructs.AksConfig;
+import com.nautilus.infra.constructs.NodePoolConfig;
 
 public class MyAppStack extends BaseAzureStack {
 

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../K1cka5h.Infra.csproj" />
+    <ProjectReference Include="../Nautilus.Infra.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,12 @@
-# k1cka5h-infra — Python
+# nautilus-infra — Python
 
 Platform-managed CDKTF construct library for Azure. Published to the internal
-PyPI registry at `https://pkgs.k1cka5h.internal/simple`.
+PyPI registry at `https://pkgs.nautilus.internal/simple`.
 
 ## Install
 
 ```bash
-pip install k1cka5h-infra==1.4.0 --index-url https://pkgs.k1cka5h.internal/simple
+pip install nautilus-infra==1.4.0 --index-url https://pkgs.nautilus.internal/simple
 ```
 
 ## Constructs
@@ -29,5 +29,5 @@ pytest tests/ -v
 
 ```bash
 python -m build
-twine upload --repository-url https://pkgs.k1cka5h.internal dist/*
+twine upload --repository-url https://pkgs.nautilus.internal dist/*
 ```

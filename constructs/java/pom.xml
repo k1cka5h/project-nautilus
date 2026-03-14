@@ -5,7 +5,7 @@
            https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.k1cka5h</groupId>
+  <groupId>com.nautilus</groupId>
   <artifactId>infra</artifactId>
   <version>1.4.0</version>
   <packaging>jar</packaging>
@@ -55,8 +55,8 @@
 
   <distributionManagement>
     <repository>
-      <id>k1cka5h-internal</id>
-      <url>https://maven.k1cka5h.internal/releases</url>
+      <id>nautilus-internal</id>
+      <url>https://maven.nautilus.internal/releases</url>
     </repository>
   </distributionManagement>
 

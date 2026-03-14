@@ -14,7 +14,7 @@ This repo holds the Terraform configuration for one product team's Azure
 infrastructure across four environments: `dev`, `qa`, `stage`, and `prod`.
 
 It does not contain raw Terraform module code. All resource logic lives in
-`k1cka5h/terraform-modules`. This repo wires together those platform modules via a
+`nautilus/terraform-modules`. This repo wires together those platform modules via a
 thin root module in `shared/`, then separates environment-specific values into
 per-environment directories.
 
@@ -53,7 +53,7 @@ tf-azure/
 ### `shared/` — do not edit without a platform team PR
 
 The `shared/` root module is the platform team's surface. It calls three
-platform Terraform modules. All are sourced from `k1cka5h/terraform-modules` via
+platform Terraform modules. All are sourced from `nautilus/terraform-modules` via
 SSH deploy key:
 
 | Module | Enabled by | Purpose |
@@ -85,7 +85,7 @@ tags.
 ## The pipeline
 
 `infra.yml` is a thin calling workflow that delegates all logic to
-`k1cka5h/reusable-workflows`. Product teams do not write pipeline logic — they
+`nautilus/reusable-workflows`. Product teams do not write pipeline logic — they
 only configure secrets and GitHub Environments.
 
 | Trigger | What runs |

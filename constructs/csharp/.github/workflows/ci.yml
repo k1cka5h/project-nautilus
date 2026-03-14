@@ -20,7 +20,7 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Test
-        run: dotnet test K1cka5h.Infra.Tests/ --verbosity normal
+        run: dotnet test Nautilus.Infra.Tests/ --verbosity normal
 
   publish:
     name: Publish to internal NuGet
@@ -38,7 +38,7 @@ jobs:
 
       - name: Verify tag matches package version
         run: |
-          PKG_VERSION=$(dotnet build K1cka5h.Infra.csproj --getProperty:Version -nologo -v q)
+          PKG_VERSION=$(dotnet build Nautilus.Infra.csproj --getProperty:Version -nologo -v q)
           TAG_VERSION="${{ github.ref_name }}"
           if [ "v${PKG_VERSION}" != "${TAG_VERSION}" ]; then
             echo "Tag ${TAG_VERSION} does not match project version v${PKG_VERSION}"
@@ -46,10 +46,10 @@ jobs:
           fi
 
       - name: Pack
-        run: dotnet pack K1cka5h.Infra.csproj -c Release -o nupkg
+        run: dotnet pack Nautilus.Infra.csproj -c Release -o nupkg
 
       - name: Publish
         run: |
           dotnet nuget push nupkg/*.nupkg \
-            --source https://nuget.k1cka5h.internal/v3/index.json \
+            --source https://nuget.nautilus.internal/v3/index.json \
             --api-key ${{ secrets.REGISTRY_TOKEN }}

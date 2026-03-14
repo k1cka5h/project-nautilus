@@ -4,10 +4,10 @@ import (
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 	"github.com/hashicorp/terraform-cdk-go/cdktf"
-	"github.com/k1cka5h/infra-go/policy"
+	"github.com/nautilus/infra-go/policy"
 )
 
-const networkModuleSource = "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
+const networkModuleSource = "git::ssh://git@github.com/nautilus/terraform-modules.git" +
 	"//modules/networking?ref=v1.4.0"
 
 // SubnetDelegation represents a service delegation on a subnet.

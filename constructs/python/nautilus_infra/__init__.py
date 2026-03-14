@@ -1,9 +1,9 @@
 """
-k1cka5h_infra — Platform-managed CDKTF construct library for Azure.
+nautilus_infra — Platform-managed CDKTF construct library for Azure.
 
 Import everything from this top-level package:
 
-    from k1cka5h_infra import (
+    from nautilus_infra import (
         BaseAzureStack,
         NetworkConstruct, SubnetConfig, SubnetDelegation,
         DatabaseConstruct, PostgresConfig,

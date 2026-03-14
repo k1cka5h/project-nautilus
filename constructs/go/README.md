@@ -1,14 +1,14 @@
-# github.com/k1cka5h/infra-go — Go
+# github.com/nautilus/infra-go — Go
 
 Platform-managed CDKTF construct library for Azure. Published to the internal
-Go proxy at `https://goproxy.k1cka5h.internal`.
+Go proxy at `https://goproxy.nautilus.internal`.
 
 ## Install
 
 ```bash
-GONOSUMCHECK=github.com/k1cka5h/infra-go \
-GOPROXY=https://goproxy.k1cka5h.internal,direct \
-  go get github.com/k1cka5h/infra-go@v1.4.0
+GONOSUMCHECK=github.com/nautilus/infra-go \
+GOPROXY=https://goproxy.nautilus.internal,direct \
+  go get github.com/nautilus/infra-go@v1.4.0
 ```
 
 ## Constructs
@@ -29,7 +29,7 @@ import (
     "github.com/aws/constructs-go/constructs/v10"
     "github.com/aws/jsii-runtime-go"
     "github.com/hashicorp/terraform-cdk-go/cdktf"
-    infra "github.com/k1cka5h/infra-go"
+    infra "github.com/nautilus/infra-go"
 )
 
 type MyAppStack struct {

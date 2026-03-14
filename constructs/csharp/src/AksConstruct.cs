@@ -1,8 +1,8 @@
 using Constructs;
 using HashiCorp.Cdktf;
-using K1cka5h.Infra.Policy;
+using Nautilus.Infra.Policy;
 
-namespace K1cka5h.Infra;
+namespace Nautilus.Infra;
 
 public record NodePoolConfig(
     string VmSize = "Standard_D4s_v3",
@@ -62,7 +62,7 @@ public class AksConstruct : Construct
 
         _module = new TerraformModule(this, "aks", new TerraformModuleConfig
         {
-            Source = "git::ssh://git@github.com/k1cka5h/terraform-modules.git" +
+            Source = "git::ssh://git@github.com/nautilus/terraform-modules.git" +
                      "//modules/compute/aks?ref=v1.4.0",
             Variables = new Dictionary<string, object>
             {

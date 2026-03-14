@@ -60,4 +60,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.REGISTRY_TOKEN }}
         run: |
           pip install twine
-          twine upload --repository-url https://pkgs.k1cka5h.internal/simple/ dist/*
+          twine upload --repository-url https://pkgs.nautilus.internal/simple/ dist/*

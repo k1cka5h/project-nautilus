@@ -9,7 +9,7 @@ Password rotation is handled outside Terraform — see the platform runbook.
 ## Usage (via CDKTF construct)
 
 ```python
-from k1cka5h_infra import DatabaseConstruct, PostgresConfig
+from nautilus_infra import DatabaseConstruct, PostgresConfig
 
 db = DatabaseConstruct(
     self, "postgres",

@@ -12,7 +12,7 @@
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  infra.yml  (thin calling workflow in each product repo)        │
-│  Delegates to k1cka5h/reusable-workflows:                         │
+│  Delegates to nautilus/reusable-workflows:                         │
 │                                                                  │
 │  tf-validate  →  fmt-check + init -backend=false + validate     │
 │  tf-changes   →  detect which env folders changed (PR only)     │
@@ -26,7 +26,7 @@
                            │  module source via SSH deploy key
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  terraform-modules  (k1cka5h/terraform-modules — private)         │
+│  terraform-modules  (nautilus/terraform-modules — private)         │
 │                                                                  │
 │  modules/networking          modules/database/postgres           │
 │  modules/compute/aks         governance/                        │
@@ -120,7 +120,7 @@ GitHub Actions runner
 │
 └── TF_MODULES_DEPLOY_KEY  (SSH deploy key, read-only, per product repo)
     → loaded by webfactory/ssh-agent before `terraform init`
-    → allows Terraform to clone git::ssh://git@github.com/k1cka5h/terraform-modules.git
+    → allows Terraform to clone git::ssh://git@github.com/nautilus/terraform-modules.git
 ```
 
 Each product team gets a service principal per environment with a federated
@@ -159,11 +159,11 @@ for how to release it.
 The construct libraries pin an explicit Git tag when sourcing each Terraform module:
 
 ```
-git::ssh://git@github.com/k1cka5h/terraform-modules.git//modules/networking?ref=v1.4.0
+git::ssh://git@github.com/nautilus/terraform-modules.git//modules/networking?ref=v1.4.0
 ```
 
 The construct library package version and the module tag it references are always
-identical. Releasing `k1cka5h-infra==1.5.0` requires cutting `v1.5.0` in the module
+identical. Releasing `nautilus-infra==1.5.0` requires cutting `v1.5.0` in the module
 repo first and updating the source strings in all five language libraries.
 
 Product teams upgrade by changing one line in their dependency file. The module
