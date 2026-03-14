@@ -1,18 +1,44 @@
 # setup
 
-Scripts, configuration, and templates for initialising GitHub repositories to
-Nautilus standards. Use this when creating a new repo for any part of the
-platform, or when onboarding a new product team.
+Everything needed to provision a complete Nautilus implementation from scratch.
+
+## 🐚 Quick start — the Nautilus wizard
+
+**`nautilus.sh` is the primary entry point.** It is an interactive, Nautilus-themed
+wizard that handles the complete implementation in a single guided session:
+
+```bash
+bash setup/nautilus.sh
+```
+
+The wizard will:
+1. Check prerequisites (`gh`, `jq`, `git`, `terraform`)
+2. Authenticate to GitHub via device flow
+3. Create all platform repositories in your org
+4. Push source code scaffolding to each repo
+5. Apply branch protection, environments, labels, CODEOWNERS, and templates
+6. Optionally run the Azure bootstrap inline
+
+No manual steps are required. After the wizard completes, the only remaining
+work is setting Azure secrets (printed by the bootstrap Terraform output).
+
+**Prerequisites:** `gh` CLI, `jq`, `git`
+**Optional:** `terraform` ≥ 1.7 (for inline Azure bootstrap)
+
+---
+
+## Directory layout
 
 ```
 setup/
+├── nautilus.sh                 🐚 Primary setup wizard — start here
 ├── configs/                    JSON configuration profiles — one per repo type
-│   ├── terraform-modules.json  For the private Terraform module library
+│   ├── terraform-modules.json  For the Terraform module library
 │   ├── reusable-workflows.json For the shared GitHub Actions workflow repo
 │   ├── construct-library.json  For each language construct library repo
 │   └── product-team.json       For each product team's infrastructure repo
 ├── scripts/
-│   └── apply-repo-config.sh    Applies a config profile to a GitHub repo
+│   └── apply-repo-config.sh    Low-level helper (called by nautilus.sh)
 └── templates/                  File templates committed into target repos
     ├── CODEOWNERS.platform     For platform repos (terraform-modules, reusable-workflows)
     ├── CODEOWNERS.construct    For construct library repos
@@ -39,16 +65,16 @@ setup/
 
 ---
 
-## Prerequisites
+## Using `apply-repo-config.sh` directly (advanced)
 
-- **`gh` CLI** authenticated with a PAT that has `repo`, `admin:org`, and
-  `read:org` scopes
-- **`jq`** installed
-- The `platform-infra` GitHub team must already exist in the organisation
+`apply-repo-config.sh` is the low-level helper called by `nautilus.sh`. You can
+also run it directly to apply or re-apply a config to a single repo — useful
+for updating an existing repo after a config change.
 
----
-
-## Running the script
+**Prerequisites:**
+- `gh` CLI authenticated with `repo`, `admin:org`, and `read:org` scopes
+- `jq` installed
+- `platform-infra` team already exists in the org
 
 ```bash
 bash setup/scripts/apply-repo-config.sh <org> <repo> <config-file> [--dry-run]

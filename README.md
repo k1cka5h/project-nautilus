@@ -155,9 +155,28 @@ Before implementing Nautilus, your organization needs:
 
 ## Implementation sequence
 
-### 1. Fork and rename
+### 1. Fork and run the setup wizard
 
-Fork this repository. Replace `k1cka5h` throughout with your organization slug.
+Fork this repository, then run the interactive setup wizard. It handles
+everything in steps 2–7 below — repo creation, branch protection, team setup,
+code push, and optionally the Azure bootstrap — in a single guided session:
+
+```bash
+bash setup/nautilus.sh
+```
+
+The wizard authenticates via GitHub device flow, prompts for your organization
+slug and product team name, and walks through each phase with selectable options.
+If you prefer to run steps manually, continue with 2–7 below.
+
+**Prerequisites:** `gh` CLI, `jq`, `git`. Terraform is optional (needed for
+Azure bootstrap, which the wizard can also run inline).
+
+---
+
+### Manual steps (alternative to the wizard)
+
+After forking, replace `k1cka5h` throughout with your organization slug.
 Key locations to update:
 
 | File | What to change |
