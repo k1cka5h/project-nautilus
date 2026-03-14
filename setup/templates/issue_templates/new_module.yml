@@ -1,0 +1,64 @@
+name: New module request
+description: Request a new Terraform module and CDKTF construct
+labels: ["module-request"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        New modules require a design review before implementation begins.
+        Fill in as much detail as possible — the platform team will follow up
+        before any work starts.
+
+  - type: textarea
+    id: resource
+    attributes:
+      label: What Azure resource(s) should this module manage?
+      description: List the azurerm resource types involved.
+      placeholder: "e.g. azurerm_redis_cache, azurerm_private_endpoint"
+    validations:
+      required: true
+
+  - type: textarea
+    id: inputs
+    attributes:
+      label: What inputs (variables) should the module expose?
+      description: Describe the configuration knobs product teams need. Exclude standard variables (project, environment, location, resource_group_name, tags) — those are always included.
+      placeholder: |
+        - capacity: Redis cache capacity (1–6)
+        - sku_name: Basic, Standard, or Premium
+        - enable_non_ssl_port: bool, default false
+    validations:
+      required: true
+
+  - type: textarea
+    id: outputs
+    attributes:
+      label: What outputs does the module need to produce?
+      description: What values will downstream constructs or product teams need?
+      placeholder: |
+        - hostname: connection endpoint
+        - primary_access_key (sensitive)
+        - id: resource ID for RBAC
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why can't an existing module cover this?
+      description: Explain what the current constructs are missing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: teams
+    attributes:
+      label: Which product teams need this?
+      description: Knowing demand helps prioritise. List team names if known.
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Security or compliance constraints
+      description: Any known Azure Policy restrictions, SKU allowlist requirements, or private endpoint requirements for this resource type?

@@ -1,64 +1,67 @@
-# Developer Guide
+# Developer Interface Reference
 
-This guide covers everything a developer needs to provision Azure infrastructure
-through Nautilus. You write a CDKTF stack in your language of choice. The platform
-team handles everything else.
-
----
-
-## Language support
-
-Nautilus supports all five CDKTF languages. Pick the one your team already writes —
-the synthesized Terraform JSON is identical regardless.
-
-| Language | Example | Construct package |
-|----------|---------|-------------------|
-| Python | [`examples/python/`](../examples/python/) | `myorg-infra` (pip) |
-| TypeScript | [`examples/typescript/`](../examples/typescript/) | `@myorg/infra` (npm) |
-| C# | [`examples/csharp/`](../examples/csharp/) | `MyOrg.Infra` (NuGet) |
-| Java | [`examples/java/`](../examples/java/) | `com.myorg:infra` (Maven) |
-| Go | [`examples/go/`](../examples/go/) | `github.com/myorg/infra-go` (Go modules) |
-
-See [`examples/README.md`](../examples/README.md) for naming convention differences
-across languages and language-specific CI/CD pipeline snippets.
+This document describes the interface Nautilus exposes to product teams. It covers
+what they can build, what the platform enforces, and how to support them when
+things go wrong. Share this document with product teams during onboarding.
 
 ---
 
-## What you can and cannot do
+## What product teams control
 
-The platform enforces these rules automatically. Violations block your PR before
-`terraform apply` ever runs — you will see an annotation on the plan step.
+Product teams write a single CDKTF stack file in their language of choice. They
+control:
 
-### Allowed in all environments
+- Which constructs to use and how to configure them
+- Resource sizes, within the platform-approved SKU list
+- Environment-specific values (via tfvars)
+- Stack outputs
 
-- Create resources using the approved constructs (`NetworkConstruct`, `DatabaseConstruct`, `AksConstruct`)
-- Configure resource sizes within the [approved SKU list](#approved-sku-list)
-- Set `ha_enabled`, `geo_redundant_backup`, `databases`, node pool counts, and other construct-exposed options
-- Create and destroy resources freely in **dev**
+Everything beneath the construct API — the Terraform modules, the pipeline, the
+state backend, the credentials, the OPA and Azure policies — is owned by the
+platform team and not visible to product teams.
+
+---
+
+## Supported languages
+
+| Language | Package | Registry |
+|----------|---------|---------|
+| Python | `myorg-infra` | Internal PyPI |
+| TypeScript | `@myorg/infra` | Internal npm |
+| C# | `MyOrg.Infra` | Internal NuGet |
+| Java | `com.myorg:infra` | Internal Maven |
+| Go | `github.com/myorg/infra-go` | Internal Go proxy |
+
+All five produce identical Terraform JSON. The synthesized output is what the
+pipeline operates on.
+
+---
+
+## What the platform enforces
 
 ### Blocked in all environments
 
-| What | Why |
-|------|-----|
-| Public IPs (`azurerm_public_ip`) | All resources must be private |
-| `public_network_access_enabled = true` on any resource | All resources must be private |
-| Public blob storage (`allow_blob_public_access = true`) | All resources must be private |
-| SKUs outside the approved list | Budget and quota control |
+| What | Policy |
+|------|--------|
+| Public IPs (`azurerm_public_ip`) | `deny_public_resources` |
+| `public_network_access_enabled = true` on any resource | `deny_public_resources` |
+| Public blob storage (`allow_blob_public_access = true`) | `deny_public_resources` |
+| VM or PostgreSQL SKUs outside the approved list | `deny_budget_violations` |
+| Missing required tags (`managed_by`, `project`, `environment`) | `deny_missing_required_tags` |
 
 ### Blocked in staging and prod
 
-| What | Why |
-|------|-----|
-| Creating network resources (VNets, NSGs, subnets, DNS zones, private endpoints) | Network infrastructure is centrally managed by the platform team |
-| Creating or modifying RBAC (role assignments, role definitions, managed identities) | All permissions in staging/prod are owned by the platform team |
-| Deleting or replacing any resource | Requires a supervised platform team decommission |
+| What | Policy |
+|------|--------|
+| Creating network resources (VNets, subnets, NSGs, DNS zones, private endpoints) | `deny_network_outside_dev` |
+| Creating or modifying RBAC (role assignments, role definitions, managed identities) | `deny_permission_changes_outside_dev` |
+| Deleting or replacing any resource | `deny_deletions_outside_dev` |
 
-If you need something that falls into a blocked category, open a ticket on the
-platform team's Jira board or ask in **#platform-infra**.
+Network infrastructure in staging and prod is managed centrally. Product teams
+reference existing subnet and DNS zone IDs from the platform team via stack inputs
+rather than provisioning their own.
 
-### Approved SKU list
-
-The pipeline enforces this. To request a new SKU, open a platform team Jira ticket.
+### Approved SKU lists
 
 **Virtual machines (AKS node pools)**
 
@@ -76,142 +79,33 @@ The pipeline enforces this. To request a new SKU, open a platform team Jira tick
 | staging | `GP_Standard_D2s_v3`, `GP_Standard_D4s_v3`, `GP_Standard_D8s_v3` |
 | prod | `GP_Standard_D4s_v3` through `GP_Standard_D32s_v3`, `MO_Standard_E4ds_v4`, `MO_Standard_E8ds_v4` |
 
----
-
-## Prerequisites
-
-```bash
-# Python 3.11 or later
-python --version
-
-# Node.js 20 or later (required by the CDKTF CLI)
-node --version
-
-# CDKTF CLI
-npm install -g cdktf-cli@0.20
-
-# Construct library — install for your language:
-# Python
-pip install myorg-infra==1.4.0 --index-url https://pkgs.myorg.internal/simple
-
-# TypeScript
-npm install @myorg/infra@1.4.0 --registry https://npm.myorg.internal
-
-# C#
-dotnet add package MyOrg.Infra --version 1.4.0 \
-  --source https://nuget.myorg.internal/v3/index.json
-
-# Java — add to pom.xml (see examples/java/pom.xml)
-
-# Go
-GOPROXY=https://goproxy.myorg.internal,direct go get github.com/myorg/infra-go@v1.4.0
-```
-
-If any internal registry is unreachable from your machine, open a ticket with
-the platform team to get network access or a temporary token.
-
-The construct libraries live in `constructs/` in this repo and are published to
-their respective internal registries by the platform team.
+To add a SKU to the allowlist, update `policy/deny_budget_violations.rego`.
 
 ---
 
-## Setting up a new project
+## Stack structure
 
-### 1. Create the project directory
-
-```
-my-product-infra/
-├── cdktf.json
-├── requirements.txt
-└── stacks/
-    └── myproduct_stack.py
-```
-
-### 2. Copy `cdktf.json`
-
-```json
-{
-  "language": "python",
-  "app": "python stacks/myproduct_stack.py",
-  "projectId": "myproduct-cdktf",
-  "sendCrashReports": "false",
-  "terraformProviders": [],
-  "terraformModules": [],
-  "context": {
-    "excludeStackIdFromLogicalIds": "true",
-    "allowSepCharsInLogicalIds": "true"
-  }
-}
-```
-
-Update `app` and `projectId` with your product name. Do not modify any other field.
-
-### 3. Create `requirements.txt`
-
-```
-myorg-infra==1.4.0
-```
-
-Always pin to an exact version. See [Upgrading](#upgrading-the-construct-library).
-
-### 4. Copy the CI/CD pipeline
-
-Copy `.github/workflows/infra.yml` from the
-[tf-Azure reference implementation](../tf-Azure/.github/workflows/infra.yml)
-into your repo. Update the stack name in the `working-directory` paths from
-`portal-stack` to your stack's identifier (the second argument to your stack
-class, e.g. `myproduct-stack`).
-
-### 5. Request secrets from the platform team
-
-Open a Jira ticket requesting the following GitHub Actions secrets for your repo.
-The platform team provisions them:
-
-| Secret | Description |
-|--------|-------------|
-| `ARM_CLIENT_ID` | Service principal for your product's subscription |
-| `ARM_CLIENT_SECRET` | |
-| `ARM_SUBSCRIPTION_ID` | |
-| `ARM_TENANT_ID` | |
-| `DB_ADMIN_PASSWORD` | PostgreSQL admin password (if using a database) |
-| `LOG_WORKSPACE_ID` | Log Analytics workspace resource ID |
-| `TF_MODULES_DEPLOY_KEY` | Read-only SSH deploy key for `myorg/terraform-modules` |
-
----
-
-## Writing your stack
-
-All stacks inherit from `BaseAzureStack`. This wires up:
-
-- The AzureRM provider (pre-configured, do not touch)
-- Remote state backend (do not touch)
-- Required tags on every resource (automatic)
-
-### Minimal stack
+All stacks inherit from `BaseAzureStack`. This base class wires up the AzureRM
+provider, configures the remote state backend, and injects the required tags on
+every resource. Product teams must not configure the provider or backend themselves.
 
 ```python
-import os
-from constructs import Construct
-from cdktf import App
-from myorg_infra import BaseAzureStack
-
-class MyProductStack(BaseAzureStack):
+class MyStack(BaseAzureStack):
     def __init__(self, scope: Construct, id_: str):
         super().__init__(
             scope, id_,
-            project="myproduct",          # lowercase, no spaces, short
-            environment=os.environ["ENVIRONMENT"],
-            location="eastus",            # omit to use the default
+            project="myproduct",           # lowercase, no spaces
+            environment=os.environ["ENVIRONMENT"],  # dev | staging | prod
+            location="eastus",             # optional, defaults to eastus
         )
-        # Add constructs below
-
-app = App()
-MyProductStack(app, "myproduct-stack")
-app.synth()
 ```
 
-`ENVIRONMENT` must be `dev`, `staging`, or `prod`. The stack will raise a
-`ValueError` at synthesis time if you pass anything else.
+The `project` and `environment` values are embedded in every resource name and in
+the state key. Changing them after initial deployment destroys and recreates every
+resource — treat them as permanent identifiers.
+
+The stack raises `ValueError` at synthesis time if `environment` is not one of
+`dev`, `staging`, or `prod`.
 
 ---
 
@@ -219,110 +113,66 @@ app.synth()
 
 ### NetworkConstruct
 
-Provisions a virtual network with subnets, NSGs, and private DNS zones.
+Provisions a virtual network with subnets, NSGs, and optional private DNS zones.
 
-```python
-from myorg_infra import NetworkConstruct, SubnetConfig, SubnetDelegation
+**Key inputs**
 
-network = NetworkConstruct(
-    self, "network",
-    project=self.project,
-    environment=self.environment,
-    resource_group="myproduct-rg",
-    location=self.location,
-    address_space=["10.10.0.0/16"],
-    subnets={
-        "aks": SubnetConfig(
-            address_prefix="10.10.0.0/22",
-            service_endpoints=["Microsoft.ContainerRegistry"],
-        ),
-        "db": SubnetConfig(
-            address_prefix="10.10.8.0/24",
-            delegation=SubnetDelegation(
-                name="postgres",
-                service="Microsoft.DBforPostgreSQL/flexibleServers",
-                actions=["Microsoft.Network/virtualNetworks/subnets/join/action"],
-            ),
-        ),
-    },
-    private_dns_zones=["privatelink.postgres.database.azure.com"],
-)
+| Input | Type | Notes |
+|-------|------|-------|
+| `address_space` | `list[str]` | e.g. `["10.10.0.0/16"]` |
+| `subnets` | `dict[str, SubnetConfig]` | Named subnets with address prefix and optional delegation |
+| `private_dns_zones` | `list[str]` | Zone FQDNs, e.g. `privatelink.postgres.database.azure.com` |
 
-# Outputs — pass to other constructs:
-network.vnet_id
-network.subnet_ids["aks"]    # subnet resource ID
-network.subnet_ids["db"]
-network.dns_zone_ids["privatelink.postgres.database.azure.com"]
-```
+Every subnet automatically gets a Network Security Group. Custom inbound or
+outbound rules use `SubnetConfig(nsg_rules=[...])`.
 
-**Address space planning**
+**Key outputs**
 
-| Subnet use | Recommended prefix | Notes |
-|------------|--------------------|-------|
-| AKS nodes | `/22` | ~1000 node IPs with Azure CNI |
-| PostgreSQL | `/24` | Must carry delegation |
+| Output | Notes |
+|--------|-------|
+| `vnet_id` | |
+| `subnet_ids` | `dict[str, str]` — keyed by subnet name |
+| `nsg_ids` | `dict[str, str]` — keyed by subnet name |
+| `dns_zone_ids` | `dict[str, str]` — keyed by zone FQDN |
+
+**Address space planning reference**
+
+| Use | Recommended prefix | Notes |
+|-----|--------------------|-------|
+| AKS nodes | `/22` | ~1000 IPs with Azure CNI |
+| PostgreSQL | `/24` | Must carry the delegation |
 | App Gateway | `/27` | Minimum for WAF_v2 |
-| Private endpoints | `/28` | One per endpoint target |
-
-Every subnet automatically gets a Network Security Group. To add custom inbound
-or outbound rules, use `SubnetConfig(nsg_rules=[...])`.
+| Private endpoints | `/28` | One per target |
 
 ---
 
 ### DatabaseConstruct
 
-Provisions a PostgreSQL Flexible Server with private VNet access.
+Provisions a PostgreSQL Flexible Server with private VNet integration.
 
-```python
-from myorg_infra import DatabaseConstruct, PostgresConfig
-
-db = DatabaseConstruct(
-    self, "postgres",
-    project=self.project,
-    environment=self.environment,
-    resource_group="myproduct-rg",
-    location=self.location,
-    subnet_id=network.subnet_ids["db"],
-    dns_zone_id=network.dns_zone_ids[
-        "privatelink.postgres.database.azure.com"
-    ],
-    admin_password=os.environ["DB_ADMIN_PASSWORD"],   # never hardcode
-    config=PostgresConfig(
-        databases=["appdb", "analyticsdb"],
-        sku="B_Standard_B1ms" if self.environment == "dev" else "GP_Standard_D2s_v3",
-        ha_enabled=self.environment == "prod",
-        server_configs={"max_connections": "400"},
-    ),
-)
-
-# Outputs:
-db.fqdn         # use as the connection host
-db.server_id    # use for RBAC assignments
-db.server_name
-```
-
-**PostgresConfig reference**
+**Key inputs — PostgresConfig**
 
 | Parameter | Type | Default | Notes |
 |-----------|------|---------|-------|
 | `databases` | `list[str]` | `[]` | Database names to create |
-| `sku` | `str` | `GP_Standard_D2s_v3` | See SKU table below |
+| `sku` | `str` | `GP_Standard_D2s_v3` | Must be on the approved list |
 | `storage_mb` | `int` | `32768` | Min 32 GiB |
 | `pg_version` | `str` | `"15"` | 14, 15, or 16 |
-| `ha_enabled` | `bool` | `False` | **Required `True` in prod** |
+| `ha_enabled` | `bool` | `False` | Required `True` in prod |
 | `geo_redundant` | `bool` | `False` | Enables geo-redundant backups |
 | `server_configs` | `dict[str, str]` | `{}` | PostgreSQL parameter overrides |
 
-**SKU reference**
+The admin password must come from `os.environ["DB_ADMIN_PASSWORD"]`, which the
+pipeline injects from the `DB_ADMIN_PASSWORD` GitHub secret. It must never be
+hardcoded in the stack.
 
-| SKU | vCores | RAM | Use case |
-|-----|--------|-----|----------|
-| `B_Standard_B1ms` | 1 | 2 GiB | Dev only |
-| `GP_Standard_D2s_v3` | 2 | 8 GiB | Staging / small prod |
-| `GP_Standard_D4s_v3` | 4 | 16 GiB | Standard prod |
-| `MO_Standard_E4s_v3` | 4 | 32 GiB | Memory-intensive workloads |
+**Key outputs**
 
-For SKUs not in this table, contact the platform team before using them.
+| Output | Notes |
+|--------|-------|
+| `fqdn` | Use as the application connection host |
+| `server_id` | Use for downstream RBAC |
+| `server_name` | |
 
 ---
 
@@ -330,50 +180,22 @@ For SKUs not in this table, contact the platform team before using them.
 
 Provisions an AKS cluster with Azure CNI, AAD RBAC, and Log Analytics monitoring.
 
-```python
-from myorg_infra import AksConstruct, AksConfig, NodePoolConfig
-
-cluster = AksConstruct(
-    self, "aks",
-    project=self.project,
-    environment=self.environment,
-    resource_group="myproduct-rg",
-    location=self.location,
-    subnet_id=network.subnet_ids["aks"],
-    log_workspace_id=os.environ["LOG_WORKSPACE_ID"],
-    config=AksConfig(
-        system_node_count=3 if self.environment == "prod" else 1,
-        additional_node_pools={
-            "workers": NodePoolConfig(
-                vm_size="Standard_D4s_v3",
-                enable_auto_scaling=True,
-                min_count=2,
-                max_count=10,
-                labels={"workload": "app"},
-            ),
-        },
-    ),
-)
-
-# Outputs:
-cluster.cluster_id                      # resource ID
-cluster.kubelet_identity_object_id      # assign ACR pull, Key Vault read
-cluster.cluster_identity_principal_id   # assign Network Contributor
-```
-
-**AksConfig reference**
+**Key inputs — AksConfig**
 
 | Parameter | Type | Default | Notes |
 |-----------|------|---------|-------|
-| `kubernetes_version` | `str` | `"1.29"` | Platform-approved list only |
+| `kubernetes_version` | `str` | `"1.29"` | Platform-approved versions only |
 | `system_node_vm_size` | `str` | `Standard_D2s_v3` | |
 | `system_node_count` | `int` | `3` | Use 3 for zone redundancy in prod |
 | `additional_node_pools` | `dict` | `{}` | Pool name max 12 chars |
 | `admin_group_object_ids` | `list[str]` | `[]` | AAD groups for cluster-admin |
 | `service_cidr` | `str` | `10.240.0.0/16` | Must not overlap VNet |
-| `dns_service_ip` | `str` | `10.240.0.10` | Within service_cidr |
+| `dns_service_ip` | `str` | `10.240.0.10` | Within `service_cidr` |
 
-**NodePoolConfig reference**
+The system node pool is tainted `CriticalAddonsOnly=true:NoSchedule`. Product
+teams should always add at least one additional pool for application workloads.
+
+**Key inputs — NodePoolConfig**
 
 | Parameter | Type | Default | Notes |
 |-----------|------|---------|-------|
@@ -385,250 +207,148 @@ cluster.cluster_identity_principal_id   # assign Network Contributor
 | `labels` | `dict` | `{}` | Kubernetes node labels |
 | `taints` | `list[str]` | `[]` | e.g. `["dedicated=gpu:NoSchedule"]` |
 
-The **system node pool is tainted** `CriticalAddonsOnly=true:NoSchedule` — your
-application pods will not schedule on it. Always add at least one additional pool
-for application workloads.
+**Key outputs**
+
+| Output | Notes |
+|--------|-------|
+| `cluster_id` | Resource ID |
+| `kubelet_identity_object_id` | Assign ACR pull, Key Vault read |
+| `cluster_identity_principal_id` | Assign Network Contributor |
 
 ---
 
-## Handling secrets
+## Secrets and environment variables
 
-Never put secrets in your stack file. All sensitive values come from environment
-variables, which are injected from GitHub Actions secrets by the CI/CD pipeline.
+No secrets are hardcoded in stack files. All sensitive values come from environment
+variables, injected by the pipeline from GitHub Actions secrets.
 
-```python
-# Correct
-admin_password=os.environ["DB_ADMIN_PASSWORD"]
+| Secret | Injected as | Used for |
+|--------|-------------|---------|
+| `DB_ADMIN_PASSWORD` | `DB_ADMIN_PASSWORD` env var | PostgreSQL admin password |
+| `LOG_WORKSPACE_ID` | `LOG_WORKSPACE_ID` env var | Log Analytics workspace resource ID |
 
-# Wrong — never do this
-admin_password="Hunter2!"
-```
+For local synthesis, product teams export these manually from a secure source
+(e.g. a key vault) before running `cdktf synth`. Synthesis is a dry-run — no
+Azure resources are created.
 
-For local synthesis (dry-run only — no Azure resources created), export them
-in your shell:
+---
 
-```bash
-export ENVIRONMENT=dev
-export DB_ADMIN_PASSWORD="$(az keyvault secret show \
-  --vault-name platform-kv \
-  --name db-admin-password \
-  --query value -o tsv)"
-```
+## The pipeline
+
+Product teams copy `infra.yml` from the reference implementation (`tf-azure/`) into
+their repo. They update the stack name references and do not otherwise modify it.
+
+**PR behaviour**
+1. `validate` — fmt-check + validate, runs on every PR
+2. `changes` — detects which environment folders changed
+3. `plan-<env>` — runs for each affected environment in parallel; posts a plan
+   comment; blocks the PR if any OPA policy is violated
+
+**Merge to main**
+1. `deploy-dev` → `deploy-qa` — automatic, sequential
+2. `gate-stage` — requires manual approval from the platform team
+3. `deploy-stage`
+4. `gate-prod` — requires manual approval from the platform team
+5. `deploy-prod`
+
+Production applies require the platform team as required reviewer on the GitHub
+`production` Environment. Configure this in the product team's repo settings.
 
 ---
 
 ## Stack outputs
 
-Use `TerraformOutput` to surface values after apply. Outputs appear in the
-CI/CD job summary and in the remote state for cross-stack references.
-
-```python
-from cdktf import TerraformOutput
-
-TerraformOutput(self, "db_fqdn",
-    value=db.fqdn,
-    description="PostgreSQL connection host for application config")
-
-TerraformOutput(self, "cluster_id",
-    value=cluster.cluster_id,
-    description="AKS cluster resource ID")
-```
-
-Output values are written to `outputs.json` and uploaded as a pipeline artifact
-after each successful apply.
-
----
-
-## Synthesizing locally
-
-Synthesis converts Python to Terraform JSON. It is a dry-run — no Azure resources
-are created. Use it to verify your stack compiles cleanly before opening a PR.
-
-```bash
-cd my-product-infra
-
-export ENVIRONMENT=dev
-export DB_ADMIN_PASSWORD=placeholder   # any value works for synth
-
-cdktf synth
-```
-
-If synthesis succeeds, `cdktf.out/` is populated with Terraform JSON. You can
-inspect it, but you don't need to — the pipeline handles it.
-
-To see what would change in Azure (requires Azure credentials):
-
-```bash
-cdktf diff
-```
-
----
-
-## Opening a pull request
-
-1. Push your branch and open a PR against `main`.
-2. The pipeline synthesizes your stack and posts a Terraform plan as a PR comment.
-3. Review the plan — look for unexpected additions, changes, or destructions.
-4. Get approval from the platform team (**required for prod environment changes**).
-5. Merge to `main` — the pipeline applies automatically.
-
-Production applies require a manual approval gate configured in the GitHub
-`production` Environment. The platform team is a required reviewer.
-
----
-
-## Common patterns
-
-### Prod vs non-prod configuration
-
-```python
-is_prod = self.environment == "prod"
-
-config = PostgresConfig(
-    sku="GP_Standard_D4s_v3" if is_prod else "B_Standard_B1ms",
-    ha_enabled=is_prod,
-    geo_redundant=is_prod,
-)
-```
-
-### Multiple databases on one server
-
-```python
-PostgresConfig(
-    databases=["appdb", "analyticsdb", "auditdb"],
-)
-```
-
-### Node pool per workload type
-
-```python
-AksConfig(
-    additional_node_pools={
-        "workers": NodePoolConfig(
-            vm_size="Standard_D4s_v3",
-            enable_auto_scaling=True,
-            min_count=2, max_count=20,
-            labels={"workload": "app"},
-        ),
-        "gpu": NodePoolConfig(
-            vm_size="Standard_NC6s_v3",
-            node_count=1,
-            labels={"workload": "gpu"},
-            taints=["dedicated=gpu:NoSchedule"],
-        ),
-    }
-)
-```
+Outputs appear in the CI/CD job summary and in the remote state for cross-stack
+references. Product teams should expose all values their application configuration
+needs (e.g. database FQDN, cluster ID).
 
 ---
 
 ## Upgrading the construct library
 
-The construct library follows semantic versioning. Breaking changes are announced
-in **#platform-infra** (Slack) with a migration guide at least two weeks before release.
+The platform team announces breaking changes with a migration guide at least two
+weeks before release. Product teams upgrade by updating their pinned version in
+their dependency file and running a local `cdktf synth` to verify compatibility.
 
-To upgrade:
-
-1. Update `requirements.txt`: `myorg-infra==<new version>`
-2. Run `cdktf synth` locally to verify your stack still synthesizes cleanly.
-3. Open a PR — review the plan carefully, as upgrades may add or modify resources.
-
-**Do not use version ranges** (e.g. `myorg-infra>=1.4`). Always pin exactly.
+Version ranges must not be used — product teams must always pin an exact version.
 
 ---
 
-## Troubleshooting
+## Troubleshooting reference
 
-### Synthesis fails with import errors (`ModuleNotFoundError`, `Cannot find module`, etc.)
+This section covers the errors product teams will encounter. Use it to diagnose
+issues quickly when supporting them.
 
-You haven't installed the construct library for your language. Install it from the
-internal registry (see [Prerequisites → Install](#prerequisites)):
+### Synthesis fails — import or module not found
 
-```bash
-# Python
-pip install myorg-infra==1.4.0 --index-url https://pkgs.myorg.internal/simple
+The construct library is not installed or was installed from the wrong registry.
+Confirm the product team is using the correct internal registry URL and the pinned
+version exists there.
 
-# TypeScript
-npm install @myorg/infra@1.4.0 --registry https://npm.myorg.internal
+### `ValueError: environment must be dev, staging, or prod`
 
-# Go
-GOPROXY=https://goproxy.myorg.internal,direct go get github.com/myorg/infra-go@v1.4.0
-```
+The `ENVIRONMENT` environment variable is missing or has an unexpected value. Only
+`dev`, `staging`, and `prod` are accepted. Check how the pipeline injects it.
 
-If the registry is unreachable, contact the platform team.
+### `terraform init` fails — `ssh: connect to host github.com port 22`
 
-### Synthesis fails with `ValueError: environment must be dev, staging, or prod`
-
-You're passing an unsupported environment value. Check that `ENVIRONMENT` is
-exported and set to one of `dev`, `staging`, or `prod`.
-
-### `terraform init` fails in CI with `ssh: connect to host github.com port 22`
-
-The `TF_MODULES_DEPLOY_KEY` secret is missing or invalid. Verify it exists in your
-repo's GitHub secrets. If it's missing, request it from the platform team.
+The `TF_MODULES_DEPLOY_KEY` secret is missing or invalid in the product team's
+repo. Verify the secret exists. If it was recently rotated on the module repo,
+ensure the updated private key was also added to the product repo.
 
 ### Policy check fails — `DENY [public-resources]`
 
-Your plan is trying to create a public IP or enable public network access. All
-resources must be private. Check that you haven't set `public_network_access_enabled`
-or referenced an `azurerm_public_ip` resource anywhere in your stack.
+The plan includes a public IP or enables public network access. This is always
+blocked. Review the stack for `public_network_access_enabled` or any
+`azurerm_public_ip` resource.
 
 ### Policy check fails — `DENY [network-outside-dev]`
 
-You're trying to create network infrastructure (VNet, NSG, subnet, private DNS zone,
-or private endpoint) in staging or prod. Network in those environments is managed
-centrally by the platform team. Remove the `NetworkConstruct` from your staging/prod
-stack and reference the existing subnet and DNS zone IDs instead — the platform team
-will provide them as stack inputs.
+A `NetworkConstruct` is present in a staging or prod stack. Network in those
+environments is platform-managed. The product team should remove the construct
+and use platform-provided subnet and DNS zone IDs as stack inputs instead.
 
 ### Policy check fails — `DENY [permissions-outside-dev]`
 
-Your stack is creating or modifying a role assignment, role definition, or managed
-identity in staging or prod. All RBAC in those environments is owned by the platform
-team. Remove the resource from your stack and open a **#platform-infra** ticket
-describing the permission you need.
+The stack creates or modifies a role assignment, role definition, or managed
+identity in staging or prod. Remove it from the stack. If the permission is
+legitimate, the platform team provisions it directly.
 
 ### Policy check fails — `DENY [deletions-outside-dev]`
 
-Your plan includes a resource deletion or replacement in staging or prod. Common causes:
+The plan includes a destruction or replacement in staging or prod. Common causes:
 
-- You changed `project` or `environment` — these are in resource names and cause full replacement.
-- You upgraded the construct library and the new module version changed a resource attribute.
-- You intentionally removed a resource from your stack.
+- The `project` or `environment` value changed — these are in resource names and
+  cause full replacement. Treat them as immutable identifiers.
+- A construct library upgrade changed a resource attribute that forces replacement.
+- The product team intentionally removed a resource.
 
-For intentional decommissions in staging/prod, open a **#platform-infra** ticket.
-The platform team will remove the management lock and supervise the deletion.
+For intentional decommissions, follow the
+[supervised decommission process](platform-product-maintenance.md#supervised-decommission-in-stagingprod).
 
 ### Policy check fails — `DENY [budget]`
 
-The VM or PostgreSQL SKU you chose is not on the approved list for this environment.
-See the [Approved SKU list](#approved-sku-list) above. To request a new SKU, open a
-platform team Jira ticket.
+The chosen SKU is not on the approved list for the target environment. Review the
+SKU tables above. To add a SKU, update `policy/deny_budget_violations.rego`.
 
-### The plan shows resource destruction I didn't expect
+### Policy check fails — `DENY [required-tags]`
 
-Read the plan carefully before raising it with the platform team. Common causes:
+A resource is missing one or more of the required tags (`managed_by`, `project`,
+`environment`). Required tags are injected automatically by `BaseAzureStack` onto
+all taggable resources. If a resource type is exempt (locks, role assignments, node
+pools, etc.) it is listed in `deny_missing_required_tags.rego`. If a new resource
+type needs exempting, update that file.
 
-- You changed `project` or `environment` — these are part of resource names.
-  Changing them replaces every resource.
-- You upgraded the construct library and the new module version changed a resource attribute.
+### The plan shows unexpected resource destruction
 
-If in doubt, tag `@platform-team` on the PR before merging.
+Common causes: `project` or `environment` changed, or a construct library upgrade
+changed a resource attribute. Review the plan carefully before approving. Block
+the PR and investigate with the product team if the destruction is unexpected.
 
-### Apply failed mid-way — some resources were created and some were not
+### Apply failed mid-way — partial state
 
-Do not retry immediately. Post in **#platform-infra** with the job link. The
-platform team will inspect the state and guide the recovery. Do not run
-`terraform apply` manually.
-
----
-
-## Getting help
-
-| Question | Where |
-|----------|-------|
-| Stack fails to synthesize | #platform-infra (Slack) |
-| Need a resource type not in the library | Open a GitHub issue on `myorg/terraform-modules` |
-| Something looks wrong in the plan | Tag `@platform-team` on the PR |
-| Need a new SKU approved | Platform team Jira board |
-| Production apply approval | Tag `@platform-team` on the PR |
+Do not let the product team retry immediately. Download the state file and identify
+what was created before the failure. Fix the root cause, then re-trigger the
+pipeline from the same commit. See
+[Product Team Maintenance — Handling a failed apply](platform-product-maintenance.md#handling-a-failed-apply)
+for the full procedure.

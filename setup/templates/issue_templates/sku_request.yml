@@ -1,0 +1,51 @@
+name: SKU approval request
+description: Request a new VM or PostgreSQL SKU be added to the platform-approved list
+labels: ["sku-request"]
+
+body:
+  - type: dropdown
+    id: sku_type
+    attributes:
+      label: SKU type
+      options:
+        - "Virtual machine (AKS node pool)"
+        - "PostgreSQL Flexible Server"
+    validations:
+      required: true
+
+  - type: input
+    id: sku_name
+    attributes:
+      label: SKU name
+      placeholder: "e.g. Standard_D32s_v3 or GP_Standard_D32s_v3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Target environment
+      description: The environment where this SKU is needed. SKUs approved for prod are not automatically available in lower environments.
+      options:
+        - dev
+        - staging
+        - prod
+        - "All environments"
+    validations:
+      required: true
+
+  - type: textarea
+    id: justification
+    attributes:
+      label: Business justification
+      description: Why does this workload need this SKU? Include vCPU/memory requirements and why the next smaller approved SKU is insufficient.
+    validations:
+      required: true
+
+  - type: input
+    id: team
+    attributes:
+      label: Requesting team
+      placeholder: "e.g. Portal team"
+    validations:
+      required: true

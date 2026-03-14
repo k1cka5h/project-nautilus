@@ -1,7 +1,7 @@
-# Platform Guide — Module Maintenance
+# Module Maintenance
 
-This guide covers how the platform team manages `myorg/terraform-modules` —
-the private Terraform module repository that backs every Nautilus construct.
+How the platform team manages `myorg/terraform-modules` — the private Terraform
+module library that backs every Nautilus construct.
 
 ---
 
@@ -12,30 +12,33 @@ the private Terraform module repository that backs every Nautilus construct.
 ```
 terraform-modules/
 ├── modules/
-│   ├── networking/               One module per directory
+│   ├── networking/
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   ├── outputs.tf
+│   │   ├── tests/networking.tftest.hcl
 │   │   └── README.md
 │   ├── database/
-│   │   └── postgres/             Sub-category for resource families
+│   │   └── postgres/
 │   │       ├── main.tf
 │   │       ├── variables.tf
 │   │       ├── outputs.tf
+│   │       ├── tests/database.tftest.hcl
 │   │       └── README.md
 │   └── compute/
 │       └── aks/
 │           ├── main.tf
 │           ├── variables.tf
 │           ├── outputs.tf
+│           ├── tests/aks.tftest.hcl
 │           └── README.md
-├── tests/                        Validation and integration tests
+├── governance/
 ├── CHANGELOG.md
 └── .github/workflows/ci.yml
 ```
 
-Each module is a self-contained directory with no dependencies on other modules.
-Modules do not call each other — that composition happens in the CDKTF constructs.
+Each module is self-contained. Modules do not call each other — composition happens
+in the CDKTF constructs.
 
 ### File responsibilities
 
@@ -43,17 +46,18 @@ Modules do not call each other — that composition happens in the CDKTF constru
 |------|---------|
 | `variables.tf` | All input declarations with descriptions and validations |
 | `main.tf` | All resources. No `variable` or `output` blocks. |
-| `outputs.tf` | All outputs, with descriptions. |
+| `outputs.tf` | All outputs with descriptions |
+| `tests/*.tftest.hcl` | `terraform test` suite using `mock_provider` |
 | `README.md` | Usage example, inputs table, outputs table |
 
-Never split resources across multiple `.tf` files within a module — keep all
-resource logic in `main.tf`. This makes code review and grep straightforward.
+All resource logic stays in `main.tf`. Do not split resources across multiple
+`.tf` files — it makes code review and grep harder.
 
 ---
 
 ## Variable conventions
 
-Every module **must** declare these variables:
+Every module declares these standard variables:
 
 ```hcl
 variable "project" {
@@ -71,7 +75,7 @@ variable "environment" {
 }
 
 variable "resource_group_name" {
-  description = "..."
+  description = "Name of the Azure resource group."
   type        = string
 }
 
@@ -90,7 +94,7 @@ variable "tags" {
 
 Rules:
 - Every variable must have a `description`.
-- Enumerations must have a `validation` block — fail fast at plan time, not apply.
+- Enumerations must have a `validation` block — fail at plan time, not apply.
 - Sensitive values (passwords, keys) must be marked `sensitive = true`.
 - Optional variables must have a `default`. Required variables must not.
 - Use `optional(type, default)` inside `object()` types to avoid forcing callers
@@ -98,7 +102,7 @@ Rules:
 
 ### Naming resources
 
-Use a consistent `local` prefix:
+Use a consistent `local` prefix and the `this` alias for each module's primary resource:
 
 ```hcl
 locals {
@@ -111,14 +115,13 @@ resource "azurerm_virtual_network" "this" {
 }
 ```
 
-The `this` alias for the primary resource of a module keeps output references
-readable (`azurerm_virtual_network.this.id`).
+The `this` alias keeps output references readable (`azurerm_virtual_network.this.id`).
 
 ---
 
 ## Output conventions
 
-Every output **must** have a `description`. Sensitive outputs must be marked
+Every output must have a `description`. Sensitive outputs must be marked
 `sensitive = true`.
 
 ```hcl
@@ -135,38 +138,40 @@ output "administrator_password" {
 ```
 
 Output names must exactly match the `get_string()` calls in the corresponding
-CDKTF construct. If you rename an output, you must update the construct in the
-same release and bump the major version.
+CDKTF construct. Renaming an output is a breaking change — it requires updating
+all five language libraries in the same release and a major version bump.
 
 ---
 
 ## Adding a new module
 
-### 1. Open a design issue first
+### 1. Open a design issue
 
-Before writing any code, open a GitHub issue describing:
+Before writing any code, document:
 - What resource(s) the module will manage
 - What variables it will expose
 - What outputs it will produce
-- Why an existing module can't cover the use case
+- Why an existing module cannot cover the use case
 
-Get at least one other platform engineer to review the design.
+Get at least one other platform engineer to review the design before starting.
 
 ### 2. Create the module directory
 
 ```bash
 mkdir -p modules/<category>/<resource-name>
 touch modules/<category>/<resource-name>/{main.tf,variables.tf,outputs.tf,README.md}
+mkdir -p modules/<category>/<resource-name>/tests
 ```
 
 ### 3. Write variables first
 
 Define inputs before resources. This forces clarity about the module's contract
-before implementation details.
+before implementation details are committed to.
 
 ### 4. Implement main.tf
 
-Follow the resource conventions above. Add `lifecycle` blocks where appropriate:
+Follow the naming and aliasing conventions above. Add `lifecycle` blocks where
+appropriate:
 
 ```hcl
 lifecycle {
@@ -175,46 +180,72 @@ lifecycle {
 }
 ```
 
+Add a `azurerm_management_lock` resource for non-dev environments:
+
+```hcl
+resource "azurerm_management_lock" "this" {
+  count      = var.environment != "dev" ? 1 : 0
+  name       = "${local.name_prefix}-lock"
+  scope      = azurerm_<resource>.this.id
+  lock_level = "CanNotDelete"
+  notes      = "Managed by Nautilus. Remove via supervised decommission only."
+}
+```
+
 ### 5. Write outputs
 
-Include all values a downstream construct might reasonably need (resource IDs,
-FQDNs, managed identity principal IDs, etc.). Outputs are cheap — omitting one
-later is a breaking change.
+Include all values a downstream construct might reasonably need: resource IDs,
+FQDNs, managed identity principal IDs. Outputs are cheap; omitting one later is
+a breaking change.
 
-### 6. Add the construct to the language libraries
+### 6. Write tests
 
-A new module is not useful until it has a corresponding CDKTF construct.
-Create a new construct file in each language library under `constructs/` following
-the existing patterns (`compute`, `database`, `network`). Update the exports for
-each language:
+Create a `tests/<module>.tftest.hcl` file using `mock_provider "azurerm" {}`.
+Test at minimum: naming conventions, resource counts, management lock absent in dev
+and present in staging/prod, and all declared outputs.
 
-- **Python**: add to `myorg_infra/constructs/__init__.py` and `myorg_infra/__init__.py`
-- **TypeScript**: add to `src/index.ts`
-- **C#**: add a new class file; no explicit export needed
-- **Java**: add a new class file; no explicit export needed
+```hcl
+mock_provider "azurerm" {}
+
+variables {
+  project            = "test"
+  environment        = "dev"
+  resource_group_name = "test-rg"
+  location           = "eastus"
+}
+
+run "naming_convention" {
+  assert {
+    condition     = azurerm_<resource>.this.name == "test-dev-<suffix>"
+    error_message = "Resource name does not follow the naming convention."
+  }
+}
+```
+
+### 7. Add the construct to all five language libraries
+
+A new module is not useful until it has a CDKTF construct. Create a new construct
+file in each library under `constructs/` following the existing patterns. Update
+exports:
+
+- **Python**: `myorg_infra/constructs/__init__.py` and `myorg_infra/__init__.py`
+- **TypeScript**: `src/index.ts`
+- **C#**: add a new class file (no explicit export needed)
+- **Java**: add a new class file (no explicit export needed)
 - **Go**: add a new `.go` file in the `infra` package
 
-### 7. Write a README
+### 8. Write a README
 
-Every module needs a README with:
+Every module needs:
 - One-paragraph description
 - Usage example (CDKTF construct, not raw Terraform)
 - Inputs table
 - Outputs table
 
-### 8. Validate locally
-
-```bash
-cd modules/<category>/<resource-name>
-terraform init -backend=false
-terraform validate
-terraform fmt -check
-```
-
 ### 9. Open a PR
 
-The CI workflow runs `fmt -check` and `validate` on every module automatically.
-A passing CI is required before merge.
+CI runs `fmt -check`, `validate`, and `terraform test` on every module automatically.
+All checks must pass before merge.
 
 ---
 
@@ -222,7 +253,7 @@ A passing CI is required before merge.
 
 ### Backwards-compatible changes (minor or patch version)
 
-These changes are safe and do not require a migration guide:
+Safe to release without a migration guide:
 - Adding a new **optional** variable (with a default that preserves current behaviour)
 - Adding a new output
 - Adding a new resource that does not replace an existing one
@@ -230,9 +261,8 @@ These changes are safe and do not require a migration guide:
 
 ### Breaking changes (major version)
 
-These require a major version bump, a migration guide, and a two-week announcement
-in **#platform-infra** before release:
-
+Require a major version bump, a written migration guide, and a two-week notice to
+all consuming teams before release:
 - Removing or renaming a variable
 - Changing the type of a variable
 - Removing or renaming an output
@@ -244,95 +274,93 @@ When in doubt, treat it as breaking.
 
 ### How to make a breaking change safely
 
-1. Add the new variable/output alongside the old one (both present).
-2. Deprecate the old one in the README and via a `validation` warning if possible.
+1. Add the new variable or output alongside the old one (both present).
+2. Deprecate the old one in the README.
 3. Release as a minor version with both present.
-4. Give teams one full sprint to upgrade.
+4. Give consuming teams one full sprint to upgrade.
 5. Remove the old one in the next major version.
 
 ---
 
 ## Testing
 
-### Mandatory: `terraform validate`
+### CI — always required
 
-The CI workflow runs `terraform validate` on every module on every PR. This
-catches type errors, undefined references, and provider schema mismatches.
+The CI workflow (`tf-modules/.github/workflows/ci.yml`) runs on every PR:
+- `terraform fmt -check -recursive modules/`
+- `terraform init -backend=false` + `terraform validate` per module
+- `terraform test` per module
 
-### Mandatory: `terraform fmt -check`
-
-All `.tf` files must be formatted with `terraform fmt`. The CI enforces this.
-Run `terraform fmt -recursive modules/` before pushing.
-
-### Recommended: CDKTF construct unit tests
-
-Each language library in `constructs/` has unit tests that synthesize each construct
-to JSON and assert the module call is wired correctly. Run them per language:
+Run these locally before pushing:
 
 ```bash
-# Python
+terraform fmt -recursive modules/
+cd modules/networking && terraform init -backend=false && terraform validate
+cd modules/networking && terraform test
+```
+
+### Construct unit tests
+
+Each language library synthesizes constructs to JSON and asserts the module call
+is wired correctly. Run them when changing module variable or output names.
+
+```bash
 cd constructs/python && pip install -e ".[dev]" && pytest tests/ -v
-
-# TypeScript
 cd constructs/typescript && npm install && npm test
-
-# C#
-cd constructs/csharp && dotnet test
-
-# Java
-cd constructs/java && mvn test
-
-# Go
+cd constructs/csharp && dotnet test MyOrg.Infra.Tests/
+cd constructs/java && mvn test --batch-mode
 cd constructs/go && go test ./...
 ```
 
-These tests catch cases where the construct passes the wrong variable name to the
-module (e.g. `subnet_id` vs `delegated_subnet_id`).
+These tests catch mismatches between the construct (e.g. `subnet_id`) and the
+module variable name (e.g. `delegated_subnet_id`).
 
-### Optional: Terratest (integration)
+### OPA policy tests
 
-For modules with complex conditional logic, consider a Terratest in `tests/`.
-Terratest provisions real Azure resources and tears them down — use sparingly and
-only in non-production subscriptions.
+Run the OPA test suite before merging any policy change:
+
+```bash
+opa test policy/ -v
+```
 
 ---
 
 ## Versioning and release process
 
-The module repo uses Git tags that follow **Semantic Versioning** (`vMAJOR.MINOR.PATCH`).
-All construct library package versions always match the module tag they reference.
+The module repo uses Git tags following **Semantic Versioning** (`vMAJOR.MINOR.PATCH`).
+Construct library package versions always match the module tag they reference.
 
 ### Release checklist
 
 - [ ] All CI checks pass on `main`
 - [ ] `CHANGELOG.md` updated under the new version heading
-- [ ] README updated if any inputs/outputs changed
-- [ ] For breaking changes: migration guide written and posted to #platform-infra
+- [ ] Module `README.md` updated if any inputs or outputs changed
+- [ ] For breaking changes: migration guide written and distributed to all consuming teams
 - [ ] For breaking changes: two-week notice period elapsed
-- [ ] Construct updated in all five language libraries under `constructs/` and tested
-- [ ] All five packages built and published to their respective internal registries
+- [ ] Construct updated in all five language libraries and unit tests pass
+- [ ] All five package versions bumped to match the new tag and source pins updated
+- [ ] All five packages published to their respective internal registries (automated — see below)
 
 ### Tagging a release
 
 ```bash
-git checkout main
-git pull
+git checkout main && git pull
 git tag -s v1.5.0 -m "Release v1.5.0"
 git push origin v1.5.0
 ```
 
-Use signed tags (`-s`). The CI `tag-check` job validates the tag format.
+Use signed tags (`-s`). The CI `tag-check` job validates the semver format.
 
-### Updating the construct library pins
+### Updating module source pins in the construct libraries
 
-After tagging, update the module source constant in each affected construct file
-across all five language libraries. Example for the networking module:
+Before tagging, update the module source string in each affected construct file
+across all five libraries and bump each package version to match:
 
 ```python
 # Python — constructs/python/myorg_infra/constructs/network.py
 _MODULE_SOURCE = (
     "git::ssh://git@github.com/myorg/terraform-modules.git"
-    "//modules/networking?ref=v1.5.0"  # was v1.4.0
+    "//modules/networking?ref=v1.5.0"
 )
 ```
 
@@ -343,39 +371,127 @@ const NETWORK_MODULE_SOURCE =
   "//modules/networking?ref=v1.5.0";
 ```
 
-The same pattern applies to the C#, Java, and Go libraries. After updating all
-source strings, bump package versions to match and publish to all internal
-registries.
+Apply the same pattern to C#, Java, and Go. Open a PR for these changes, merge
+it, and then push the tag. The publish workflow triggers automatically on the tag.
+
+### Automated registry publishing
+
+Each construct library's CI workflow (`constructs/<lang>/.github/workflows/ci.yml`)
+publishes automatically when a semver tag is pushed. Publishing is gated on the
+`test` job passing and on the `registry` GitHub Environment, which should be
+configured with the platform team as required reviewers.
+
+The workflow verifies the git tag matches the version declared in the package
+manifest before publishing. A mismatch fails the job before any artifact is
+uploaded.
+
+| Language | Registry | Publish mechanism | Secret |
+|----------|---------|-------------------|--------|
+| Python | Internal PyPI (`pkgs.myorg.internal`) | `twine upload` with `__token__` auth | `REGISTRY_TOKEN` |
+| TypeScript | Internal npm (`npm.myorg.internal`) | `npm publish` via `NODE_AUTH_TOKEN` | `REGISTRY_TOKEN` |
+| Java | Internal Maven (`maven.myorg.internal`) | `mvn deploy` with server credentials | `REGISTRY_TOKEN` |
+| C# | Internal NuGet (`nuget.myorg.internal`) | `dotnet nuget push` with API key | `REGISTRY_TOKEN` |
+| Go | Internal Go proxy (`goproxy.myorg.internal`) | Proxy cache warmed via HTTP request | `REGISTRY_TOKEN` |
+
+Go is different from the other four: Go modules are versioned by git tag, not a
+package manifest. The publish job warms the internal Athens proxy cache by
+requesting the new version immediately after the tag is pushed. Consumers get the
+module on their first `go get` without waiting for the proxy to fetch it lazily.
+
+### Setting up the `registry` GitHub Environment
+
+Each construct library repo needs a `registry` Environment configured before
+publishing will work:
+
+1. Repo **Settings → Environments → New environment** → name it `registry`
+2. Add **Required reviewers**: platform team lead (or the full platform team)
+3. Add the `REGISTRY_TOKEN` secret scoped to this environment
+
+Scoping `REGISTRY_TOKEN` to the environment (rather than at the repo level)
+ensures it is only accessible to the publish job and only after a reviewer approves.
 
 ---
 
 ## Access control
 
-The `myorg/terraform-modules` repo is private. Access is controlled by GitHub team
-membership:
+The `myorg/terraform-modules` repo is private.
 
 | GitHub team | Access |
 |-------------|--------|
-| `platform-infra` | Write (can merge PRs, create tags) |
-| `developers` | No direct access |
-| CI runners | Read-only via deploy key (`TF_MODULES_DEPLOY_KEY`) |
+| `platform-infra` | Write (merge PRs, create tags) |
+| Product team developers | No direct access |
+| CI runners (product repos) | Read-only via per-repo SSH deploy key |
 
-The deploy key is a **repository-scoped, read-only SSH key**. Each consuming
-product repo has its own deploy key secret — they are not shared. To provision
-a new deploy key for a product team:
+Each product repo has its own deploy key — keys are not shared across repos.
+
+### Provisioning a deploy key for a new product team
 
 ```bash
-# Generate a key pair (do not add a passphrase)
-ssh-keygen -t ed25519 -C "github-actions@myorg/portal-infra" -f /tmp/tf_modules_key
+# Generate a key pair (no passphrase)
+ssh-keygen -t ed25519 -C "github-actions@myorg/<product>-infra" -f /tmp/tf_modules_key
 
-# Add the public key as a deploy key in the terraform-modules repo settings:
-#   Settings → Deploy keys → Add deploy key (read-only)
+# Add public key as a read-only deploy key on the terraform-modules repo:
+#   Settings → Deploy keys → Add deploy key → Allow write access: NO
 
-# Add the private key as a secret in the product repo:
-#   Settings → Secrets and variables → Actions → TF_MODULES_DEPLOY_KEY
+# Add private key as a secret in the product team's repo:
+#   Settings → Secrets and variables → Actions → New secret → TF_MODULES_DEPLOY_KEY
 ```
 
-Rotate deploy keys annually or immediately on suspected compromise.
+Rotate deploy keys annually and immediately on suspected compromise.
+
+---
+
+## Releasing reusable workflows
+
+The `myorg/reusable-workflows` repo is versioned independently from the Terraform
+modules. Calling workflows (`infra.yml`) pin a specific tag:
+
+```yaml
+uses: myorg/reusable-workflows/.github/workflows/tf-plan.yml@v1.0.0
+```
+
+### When to cut a new release
+
+Cut a new reusable-workflows release when:
+- A new workflow step is added or an existing step changes behaviour
+- An action version is bumped (e.g. `actions/checkout@v4` → `v5`)
+- A new workflow is added (e.g. `tf-drift.yml`)
+- A bug in the pipeline logic is fixed
+
+### Breaking vs. non-breaking changes
+
+A change is **breaking** if it removes or renames a workflow input or secret that
+calling workflows reference. Inputs added with defaults and entirely new workflows
+are non-breaking. When in doubt, treat it as breaking.
+
+Breaking changes require:
+- A migration guide showing how to update `infra.yml` in each product repo
+- Two-week notice to all product teams
+- A coordinated PR push to every consuming repo (see the pipeline template update
+  script in [Product Team Maintenance — Routine maintenance](platform-product-maintenance.md#routine-maintenance))
+
+### Release checklist
+
+- [ ] All CI checks pass on `main` (workflow trigger tests)
+- [ ] Calling workflow in `tf-azure/` updated and tested end-to-end
+- [ ] For breaking changes: migration guide written and distributed
+- [ ] For breaking changes: two-week notice elapsed
+
+### Tagging a release
+
+```bash
+git checkout main && git pull
+git tag -s v1.1.0 -m "Release v1.1.0"
+git push origin v1.1.0
+```
+
+The CI `tag-check` job validates the semver format on every tag push.
+
+### Updating the pin in product repos
+
+After tagging, open a PR on every product team's infra repo to update the
+`@v1.x.x` pin across all `uses:` lines in their `infra.yml`. Use the bulk PR
+script documented in [Product Team Maintenance — Routine maintenance](platform-product-maintenance.md#routine-maintenance).
 
 ---
 
@@ -383,71 +499,57 @@ Rotate deploy keys annually or immediately on suspected compromise.
 
 ### OPA/conftest policies (`policy/`)
 
-The OPA policies live in `policy/` at the root of this repo. They are checked into
-version control and reviewed like any other code change — a PR is required.
+OPA policies are reviewed like any code change — a PR is required. The OPA test
+suite (`*_test.rego`) must be updated alongside the policy and must pass before
+merging:
+
+```bash
+opa test policy/ -v
+```
 
 **When to update OPA policies:**
-- A new resource type needs to be blocked (add it to the relevant type set)
-- A new SKU is approved by the platform team (add it to `deny_budget_violations.rego`)
-- A new environment restriction is needed
-- An existing policy is too broad and blocking legitimate use cases
+- A new resource type must be blocked (add to the relevant type set)
+- A new SKU is approved (add to `deny_budget_violations.rego`)
+- An existing policy is too broad and blocking legitimate use
 
 **Testing a policy change locally:**
 
 ```bash
-# Install conftest
-brew install conftest   # or download from GitHub releases
-
 # Get a real plan JSON to test against
 terraform show -json tfplan > tfplan.json
 
-# Run all policies (pass environment as data)
+# Run all policies against it
 conftest test tfplan.json --policy policy/ --data <(printf '{"environment":"prod"}')
-
-# Run a single policy file
-conftest test tfplan.json --policy policy/deny_budget_violations.rego \
-  --data <(printf '{"environment":"prod"}')
 ```
 
-Always test both the case that should be denied and the case that should pass before
-merging a policy change.
+Always test both the case that should be denied and the case that should pass.
 
 ### Azure Policy (`tf-modules/governance/`)
 
-Azure Policy is the cloud-level enforcement backstop. Changes to Azure Policy
+Azure Policy is the ARM-level enforcement backstop. Changes to Azure Policy
 definitions are Terraform changes in `tf-modules/governance/` and go through the
-normal module PR + tag process.
-
-**When to update Azure Policy:**
-- A new resource type should be blocked at the ARM API level
-- Policy scope needs to change (e.g. a new subscription is added for a new environment)
-- A budget cap needs adjusting (`variables.tf` → `monthly_budget_amounts`)
+normal module PR and tag process.
 
 The governance module is applied by the platform team from a privileged workspace
-(not by product team pipelines). After merging a governance change:
+— not by product team pipelines:
 
 ```bash
 cd tf-modules/governance
 terraform init
-terraform plan   # review carefully — this affects all subscriptions
+terraform plan    # review carefully — this affects all subscriptions
 terraform apply
 ```
 
+**When to update Azure Policy:**
+- A new resource type must be blocked at the ARM level
+- Scope needs to change (new subscription added for a new environment)
+- Budget caps require adjustment (`variables.tf → monthly_budget_amounts`)
+
 ### Management locks
 
-Management locks are defined inside each Terraform module (`modules/networking`,
-`modules/database/postgres`, `modules/compute/aks`) with:
-
-```hcl
-resource "azurerm_management_lock" "..." {
-  count      = var.environment != "dev" ? 1 : 0
-  lock_level = "CanNotDelete"
-  ...
-}
-```
-
-Locks are created automatically when a product team's stack is applied in
-staging or prod. They do not need to be managed separately.
+Management locks are defined inside each Terraform module with a count gated on
+`var.environment != "dev"`. They are created automatically when a product team's
+stack applies in staging or prod. No separate management is required.
 
 To remove a lock for a supervised decommission, see
-[platform-product-maintenance.md → Supervised decommission](platform-product-maintenance.md#supervised-decommission-in-stagingprod).
+[Product Team Maintenance — Supervised decommission](platform-product-maintenance.md#supervised-decommission-in-stagingprod).

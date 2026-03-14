@@ -5,6 +5,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+    tags: ["v*.*.*"]
 
 jobs:
   test:
@@ -20,3 +21,35 @@ jobs:
 
       - name: Test
         run: dotnet test MyOrg.Infra.Tests/ --verbosity normal
+
+  publish:
+    name: Publish to internal NuGet
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref_type == 'tag'
+    environment: registry
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Verify tag matches package version
+        run: |
+          PKG_VERSION=$(dotnet build MyOrg.Infra.csproj --getProperty:Version -nologo -v q)
+          TAG_VERSION="${{ github.ref_name }}"
+          if [ "v${PKG_VERSION}" != "${TAG_VERSION}" ]; then
+            echo "Tag ${TAG_VERSION} does not match project version v${PKG_VERSION}"
+            exit 1
+          fi
+
+      - name: Pack
+        run: dotnet pack MyOrg.Infra.csproj -c Release -o nupkg
+
+      - name: Publish
+        run: |
+          dotnet nuget push nupkg/*.nupkg \
+            --source https://nuget.myorg.internal/v3/index.json \
+            --api-key ${{ secrets.REGISTRY_TOKEN }}

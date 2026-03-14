@@ -1,0 +1,52 @@
+{
+  "repo": {
+    "description": "Shared GitHub Actions reusable workflows for the Nautilus IaC platform",
+    "visibility": "private",
+    "has_issues": true,
+    "has_projects": false,
+    "has_wiki": false,
+    "delete_branch_on_merge": true,
+    "allow_squash_merge": true,
+    "allow_merge_commit": false,
+    "allow_rebase_merge": false,
+    "squash_merge_commit_title": "PR_TITLE",
+    "squash_merge_commit_message": "PR_BODY"
+  },
+  "branch_protection": {
+    "branch": "main",
+    "required_status_checks": {
+      "strict": true,
+      "contexts": ["test"]
+    },
+    "enforce_admins": true,
+    "required_pull_request_reviews": {
+      "dismiss_stale_reviews": true,
+      "require_code_owner_reviews": true,
+      "required_approving_review_count": 2,
+      "require_last_push_approval": true
+    },
+    "restrictions": null,
+    "allow_force_pushes": false,
+    "allow_deletions": false,
+    "required_conversation_resolution": true
+  },
+  "environments": [],
+  "teams": [
+    { "slug": "platform-infra", "permission": "maintain" }
+  ],
+  "labels": [
+    { "name": "breaking-change",       "color": "d73a4a", "description": "Introduces a breaking change — consuming repos must update their infra.yml" },
+    { "name": "needs-migration-guide", "color": "e4e669", "description": "Breaking change — migration steps must be communicated to all product teams" },
+    { "name": "bug",                   "color": "d73a4a", "description": "Something is not working as documented" },
+    { "name": "workflow:validate",     "color": "0075ca", "description": "Affects tf-validate.yml" },
+    { "name": "workflow:plan",         "color": "0075ca", "description": "Affects tf-plan.yml" },
+    { "name": "workflow:deploy",       "color": "0075ca", "description": "Affects tf-deploy.yml" },
+    { "name": "workflow:drift",        "color": "0075ca", "description": "Affects tf-drift.yml" },
+    { "name": "workflow:changes",      "color": "0075ca", "description": "Affects tf-changes.yml" }
+  ],
+  "templates": {
+    "codeowners": "platform",
+    "pull_request_template": true,
+    "issue_templates": ["bug_report"]
+  }
+}

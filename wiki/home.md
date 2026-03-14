@@ -1,32 +1,25 @@
-# Project Nautilus — Wiki
+# Nautilus — Platform Team Wiki
 
-Nautilus is the organization's infrastructure-as-code platform. It lets developer
-teams provision Azure resources by writing CDKTF stacks in Python, TypeScript, C#,
-Java, or Go, while the platform team maintains compliance, security, and operational
-standards through managed Terraform modules and construct libraries.
+This wiki is the operational reference for platform engineers who build and run
+Nautilus. It covers the full system: Terraform modules, construct libraries,
+CI/CD pipelines, OPA policies, state backend, and product team support.
 
----
-
-## How it works — one paragraph
-
-A developer writes a stack class in their language of choice that describes what
-their product needs: a network, a database, a Kubernetes cluster. They open a pull
-request. The CI/CD pipeline converts that code to Terraform JSON, posts a plan as a
-PR comment, and applies the changes to Azure on merge. The Terraform modules backing
-every resource are owned and maintained by the platform team — developers never see
-or write Terraform.
+If you are a product team developer, see the
+[developer interface reference](developer-guide.md) — the document the platform
+team maintains and shares with product teams.
 
 ---
 
-## Who this wiki is for
+## Navigation
 
-| Audience | Start here |
-|----------|-----------|
-| Developer onboarding to Nautilus for the first time | [Developer Guide](developer-guide.md) |
-| Developer troubleshooting a stack or pipeline issue | [Developer Guide → Troubleshooting](developer-guide.md#troubleshooting) |
-| Platform engineer adding or changing a Terraform module | [Module Maintenance](platform-module-maintenance.md) |
-| Platform engineer reviewing a product team's PR or managing state | [Product Team Maintenance](platform-product-maintenance.md) |
-| Anyone wanting the full architectural picture | [Architecture Overview](architecture-overview.md) |
+| I need to... | Go to |
+|---|---|
+| Understand how the whole system fits together | [Architecture Overview](architecture-overview.md) |
+| Provision Azure prerequisites and OIDC service principals | [Bootstrap](bootstrap.md) |
+| Set up a new GitHub repo with branch protection, environments, and templates | [Repository Setup](repository-setup.md) |
+| Add, change, or release a Terraform module or construct | [Module Maintenance](platform-module-maintenance.md) |
+| Review a product team's PR, handle an incident, or onboard a new team | [Product Team Maintenance](platform-product-maintenance.md) |
+| Know what the developer API looks like | [Developer Interface Reference](developer-guide.md) |
 
 ---
 
@@ -34,49 +27,65 @@ or write Terraform.
 
 ```
 project-nautilus/
-├── tf-modules/                   Private Terraform module repo (myorg/terraform-modules)
-│   └── modules/
-│       ├── networking/           VNet, subnets, NSGs, private DNS
-│       ├── database/postgres/    PostgreSQL Flexible Server
-│       └── compute/aks/          AKS cluster
 │
-├── tf-Azure/                     Example product team repo (Portal product)
-│   ├── stacks/portal_stack.py    Developer-authored stack
-│   └── .github/workflows/        Synth → plan → apply pipeline
+├── tf-modules/                     Private Terraform module library
+│   ├── modules/
+│   │   ├── networking/             VNet, subnets, NSGs, private DNS zones
+│   │   ├── database/postgres/      PostgreSQL Flexible Server
+│   │   └── compute/aks/            AKS cluster
+│   ├── governance/                 Azure Policy definitions and assignments
+│   ├── tests/                      Per-module .tftest.hcl suites (terraform test)
+│   └── .github/workflows/ci.yml   Validate + fmt-check + test on every PR
 │
-├── reusable-workflows/           Shared GitHub Actions workflows (myorg/reusable-workflows)
-│   └── .github/workflows/
-│       ├── tf-validate.yml       fmt-check + init + validate
-│       ├── tf-changes.yml        PR change detection (which envs are affected)
-│       ├── tf-plan.yml           plan + policy check + PR comment
-│       └── tf-deploy.yml        plan + policy check + apply + artifact
+├── reusable-workflows/             Shared GitHub Actions workflows
+│   ├── .github/workflows/
+│   │   ├── tf-validate.yml         fmt-check + init + validate
+│   │   ├── tf-changes.yml          Detect which environments a PR affects
+│   │   ├── tf-plan.yml             Plan + OPA check + post PR comment
+│   │   ├── tf-deploy.yml           Plan + OPA check + apply + artifact upload
+│   │   └── tf-drift.yml            Daily drift detection; opens issue on change
+│   └── tests/                      Pytest suite validating all workflow YAML
 │
-├── constructs/                   Platform construct libraries (one per language)
-│   ├── python/                   myorg-infra — internal PyPI
-│   ├── typescript/               @myorg/infra — internal npm
-│   ├── csharp/                   MyOrg.Infra — internal NuGet
-│   ├── java/                     com.myorg:infra — internal Maven
-│   └── go/                       github.com/myorg/infra-go — internal Go proxy
+├── constructs/                     Construct libraries, one per language
+│   ├── python/                     myorg-infra → internal PyPI
+│   ├── typescript/                 @myorg/infra → internal npm
+│   ├── csharp/                     MyOrg.Infra → internal NuGet
+│   ├── java/                       com.myorg:infra → internal Maven
+│   └── go/                         github.com/myorg/infra-go → internal Go proxy
 │
-└── examples/                     Consumer stack in all five CDKTF languages
-    ├── python/                   pip  — myorg-infra
-    ├── typescript/               npm  — @myorg/infra
-    ├── csharp/                   NuGet — MyOrg.Infra
-    ├── java/                     Maven — com.myorg:infra
-    └── go/                       Go modules — github.com/myorg/infra-go
+├── policy/                         OPA/conftest policies
+│   ├── deny_public_resources.rego
+│   ├── deny_network_outside_dev.rego
+│   ├── deny_permission_changes_outside_dev.rego
+│   ├── deny_deletions_outside_dev.rego
+│   ├── deny_budget_violations.rego
+│   ├── deny_missing_required_tags.rego
+│   └── *_test.rego                 OPA test suite (one per policy)
+│
+├── tf-azure/                       Reference product-team repo (Portal)
+│   ├── shared/                     Terraform root module
+│   ├── dev/ qa/ stage/ prod/       Per-environment backend config and tfvars
+│   └── .github/workflows/infra.yml Thin calling workflow
+│
+├── examples/                       Consumer stacks in all five languages
+│
+└── wiki/                           This documentation
 ```
 
 ---
 
-## Quick links
+## Platform team responsibilities at a glance
 
-- [myorg/terraform-modules](https://github.com/myorg/terraform-modules) — private, platform team
-- [myorg/reusable-workflows](https://github.com/myorg/reusable-workflows) — shared GitHub Actions workflows
-- Construct libraries: `constructs/` in this repo (published to internal registries)
-- Internal PyPI: `https://pkgs.myorg.internal/simple`
-- Internal npm: `https://npm.myorg.internal`
-- Internal NuGet: `https://nuget.myorg.internal/v3/index.json`
-- Internal Maven: `https://maven.myorg.internal/releases`
-- Internal Go proxy: `https://goproxy.myorg.internal`
-- #platform-infra (Slack) — questions, incidents, announcements
-- Platform team Jira board — module requests, new product onboarding
+| Area | Details |
+|------|---------|
+| Terraform modules | All changes, CI, versioning, breaking-change coordination |
+| Construct libraries | All five languages; publish to internal registries |
+| Reusable workflows | Pipeline template; push updates to every product repo |
+| OPA policies | Add rules; triage policy violations with product teams |
+| Azure Policy | Definitions + assignments across all subscriptions |
+| State backend | Storage account, RBAC, blob lease management |
+| Service principals | One per product team per environment; OIDC federated credentials |
+| Module deploy keys | Read-only SSH key per product repo |
+| Production approval gate | Required reviewer on GitHub Environments |
+| Incident response | Failed applies, state corruption, unexpected drift |
+| Module upgrade coordination | Announce breaking changes; track migration across all consuming repos |

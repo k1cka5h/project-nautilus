@@ -1,0 +1,59 @@
+name: Infrastructure request
+description: Request a platform team action — permissions, network changes, decommissions, or anything blocked by policy
+labels: ["infra-request"]
+
+body:
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      options:
+        - "RBAC / permissions change"
+        - "Network change (VNet, subnet, DNS zone)"
+        - "Resource decommission (staging or prod)"
+        - "New SKU approval"
+        - "State surgery (import or remove)"
+        - "Emergency break-glass deployment"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Affected environment
+      options:
+        - dev
+        - staging
+        - prod
+        - "Multiple"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to change and why? For decommissions, list the resources to be removed. For permissions, list the role and the principal.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact of not acting
+      description: What breaks or is blocked if this request is not fulfilled?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      options:
+        - "Routine — no deadline"
+        - "Needed within this sprint"
+        - "Urgent — blocking a release"
+        - "Critical — production incident"
+    validations:
+      required: true

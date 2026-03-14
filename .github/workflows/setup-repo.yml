@@ -1,0 +1,57 @@
+name: Repository setup
+
+# Applies a Nautilus repository configuration to a GitHub repo.
+# Run this when creating a new platform repo or onboarding a new product team.
+#
+# Required secret: PLATFORM_GITHUB_TOKEN
+#   A Personal Access Token (classic) with scopes: repo, admin:org, read:org
+#   Store it as an Actions secret in this repo.
+
+on:
+  workflow_dispatch:
+    inputs:
+      org:
+        description: GitHub organization
+        required: true
+        default: myorg
+      repo:
+        description: Target repository name (e.g. terraform-modules, portal-infra)
+        required: true
+      config:
+        description: Configuration to apply
+        required: true
+        type: choice
+        options:
+          - terraform-modules
+          - reusable-workflows
+          - construct-library
+          - product-team
+      dry_run:
+        description: Dry run — print planned changes without applying them
+        type: boolean
+        default: false
+
+jobs:
+  setup:
+    name: Apply ${{ inputs.config }} config to ${{ inputs.org }}/${{ inputs.repo }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Apply repository configuration
+        env:
+          GH_TOKEN: ${{ secrets.PLATFORM_GITHUB_TOKEN }}
+        run: |
+          DRY_RUN_FLAG=""
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+          bash setup/scripts/apply-repo-config.sh \
+            "${{ inputs.org }}" \
+            "${{ inputs.repo }}" \
+            "setup/configs/${{ inputs.config }}.json" \
+            ${DRY_RUN_FLAG}
