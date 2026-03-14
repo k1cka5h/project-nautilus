@@ -2,7 +2,6 @@
   "_comment": "Template applied to each construct library repo (python, typescript, csharp, java, go). The repo description is set per-language at apply time.",
   "repo": {
     "description": "Nautilus CDKTF construct library",
-    "visibility": "private",
     "has_issues": true,
     "has_projects": false,
     "has_wiki": false,
@@ -17,7 +16,9 @@
     "branch": "main",
     "required_status_checks": {
       "strict": true,
-      "contexts": ["test"]
+      "contexts": [
+        "test"
+      ]
     },
     "enforce_admins": true,
     "required_pull_request_reviews": {
@@ -35,21 +36,40 @@
     {
       "name": "registry",
       "wait_timer": 0,
-      "reviewer_teams": ["platform-infra"],
+      "reviewer_teams": [
+        "platform-infra"
+      ],
       "deployment_branch_policy": "protected_branches"
     }
   ],
   "teams": [
-    { "slug": "platform-infra", "permission": "maintain" }
+    {
+      "slug": "platform-infra",
+      "permission": "maintain"
+    }
   ],
   "labels": [
-    { "name": "breaking-change",       "color": "d73a4a", "description": "Introduces a breaking change requiring a major version bump" },
-    { "name": "needs-migration-guide", "color": "e4e669", "description": "Breaking change — migration guide must be written before release" },
-    { "name": "bug",                   "color": "d73a4a", "description": "Something is not working as documented" }
+    {
+      "name": "breaking-change",
+      "color": "d73a4a",
+      "description": "Introduces a breaking change requiring a major version bump"
+    },
+    {
+      "name": "needs-migration-guide",
+      "color": "e4e669",
+      "description": "Breaking change — migration guide must be written before release"
+    },
+    {
+      "name": "bug",
+      "color": "d73a4a",
+      "description": "Something is not working as documented"
+    }
   ],
   "templates": {
     "codeowners": "construct",
     "pull_request_template": true,
-    "issue_templates": ["bug_report"]
+    "issue_templates": [
+      "bug_report"
+    ]
   }
 }

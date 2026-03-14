@@ -74,7 +74,73 @@ else
 fi
 ok "Repository settings applied"
 
-# ── 2. Branch protection ──────────────────────────────────────────────────────
+# ── 2. File templates (committed before branch protection to avoid push restrictions) ──────
+
+CODEOWNERS_VARIANT=$(jq -r '.templates.codeowners // empty' "${CONFIG}")
+PR_TEMPLATE=$(jq -r '.templates.pull_request_template // false' "${CONFIG}")
+ISSUE_TEMPLATES=$(jq -r '.templates.issue_templates[]? // empty' "${CONFIG}")
+
+commit_file() {
+  local dest_path="$1"
+  local src_file="$2"
+  local message="$3"
+
+  if is_dry; then
+    dry "Commit '${dest_path}' from '${src_file}'"
+    return
+  fi
+
+  local content
+  content=$(base64 < "${src_file}" | tr -d '\n')
+
+  local sha=""
+  sha=$(gh api "/repos/${ORG}/${REPO}/contents/${dest_path}" --jq '.sha' 2>/dev/null || true)
+
+  local payload
+  if [[ -n "${sha}" ]]; then
+    payload=$(jq -n --arg msg "${message}" --arg content "${content}" --arg sha "${sha}" \
+      '{message: $msg, content: $content, sha: $sha}')
+  else
+    payload=$(jq -n --arg msg "${message}" --arg content "${content}" \
+      '{message: $msg, content: $content}')
+  fi
+
+  echo "${payload}" \
+    | gh api --method PUT "/repos/${ORG}/${REPO}/contents/${dest_path}" --input - > /dev/null
+}
+
+if [[ -n "${CODEOWNERS_VARIANT}" ]]; then
+  log "Committing CODEOWNERS..."
+  SRC="${TEMPLATES_DIR}/CODEOWNERS.${CODEOWNERS_VARIANT}"
+  [[ -f "${SRC}" ]] || fail "CODEOWNERS template not found: ${SRC}"
+  commit_file ".github/CODEOWNERS" "${SRC}" "chore: add CODEOWNERS via Nautilus setup"
+  ok "CODEOWNERS committed"
+fi
+
+if [[ "${PR_TEMPLATE}" == "true" ]]; then
+  log "Committing pull request template..."
+  if [[ "${CODEOWNERS_VARIANT}" == "product" ]]; then
+    PR_SRC="${TEMPLATES_DIR}/pull_request_template.product.md"
+  else
+    PR_SRC="${TEMPLATES_DIR}/pull_request_template.platform.md"
+  fi
+  [[ -f "${PR_SRC}" ]] || fail "PR template not found: ${PR_SRC}"
+  commit_file ".github/pull_request_template.md" "${PR_SRC}" "chore: add PR template via Nautilus setup"
+  ok "Pull request template committed"
+fi
+
+if [[ -n "${ISSUE_TEMPLATES}" ]]; then
+  log "Committing issue templates..."
+  while IFS= read -r tmpl; do
+    [[ -z "${tmpl}" ]] && continue
+    SRC="${TEMPLATES_DIR}/issue_templates/${tmpl}.yml"
+    [[ -f "${SRC}" ]] || { warn "Issue template not found, skipping: ${SRC}"; continue; }
+    commit_file ".github/ISSUE_TEMPLATE/${tmpl}.yml" "${SRC}" "chore: add issue template '${tmpl}' via Nautilus setup"
+    ok "  Issue template '${tmpl}' committed"
+  done <<< "${ISSUE_TEMPLATES}"
+fi
+
+# ── 3. Branch protection ──────────────────────────────────────────────────────
 
 log "Applying branch protection..."
 BRANCH=$(jq -r '.branch_protection.branch' "${CONFIG}")
@@ -183,74 +249,6 @@ if [[ "${LABEL_COUNT}" -gt 0 ]]; then
       ok "  Created label '${LABEL_NAME}'"
     fi
   done
-fi
-
-# ── 6. File templates ─────────────────────────────────────────────────────────
-
-CODEOWNERS_VARIANT=$(jq -r '.templates.codeowners // empty' "${CONFIG}")
-PR_TEMPLATE=$(jq -r '.templates.pull_request_template // false' "${CONFIG}")
-ISSUE_TEMPLATES=$(jq -r '.templates.issue_templates[]? // empty' "${CONFIG}")
-
-commit_file() {
-  local dest_path="$1"
-  local src_file="$2"
-  local message="$3"
-
-  if is_dry; then
-    dry "Commit '${dest_path}' from '${src_file}'"
-    return
-  fi
-
-  local content
-  content=$(base64 < "${src_file}" | tr -d '\n')
-
-  # Check if file already exists (need its SHA to update)
-  local sha=""
-  sha=$(gh api "/repos/${ORG}/${REPO}/contents/${dest_path}" --jq '.sha' 2>/dev/null || true)
-
-  local payload
-  if [[ -n "${sha}" ]]; then
-    payload=$(jq -n --arg msg "${message}" --arg content "${content}" --arg sha "${sha}" \
-      '{message: $msg, content: $content, sha: $sha}')
-  else
-    payload=$(jq -n --arg msg "${message}" --arg content "${content}" \
-      '{message: $msg, content: $content}')
-  fi
-
-  echo "${payload}" \
-    | gh api --method PUT "/repos/${ORG}/${REPO}/contents/${dest_path}" --input - > /dev/null
-}
-
-if [[ -n "${CODEOWNERS_VARIANT}" ]]; then
-  log "Committing CODEOWNERS..."
-  SRC="${TEMPLATES_DIR}/CODEOWNERS.${CODEOWNERS_VARIANT}"
-  [[ -f "${SRC}" ]] || fail "CODEOWNERS template not found: ${SRC}"
-  commit_file ".github/CODEOWNERS" "${SRC}" "chore: add CODEOWNERS via Nautilus setup"
-  ok "CODEOWNERS committed"
-fi
-
-if [[ "${PR_TEMPLATE}" == "true" ]]; then
-  log "Committing pull request template..."
-  # Use platform template for platform/construct repos, product template otherwise
-  if [[ "${CODEOWNERS_VARIANT}" == "product" ]]; then
-    PR_SRC="${TEMPLATES_DIR}/pull_request_template.product.md"
-  else
-    PR_SRC="${TEMPLATES_DIR}/pull_request_template.platform.md"
-  fi
-  [[ -f "${PR_SRC}" ]] || fail "PR template not found: ${PR_SRC}"
-  commit_file ".github/pull_request_template.md" "${PR_SRC}" "chore: add PR template via Nautilus setup"
-  ok "Pull request template committed"
-fi
-
-if [[ -n "${ISSUE_TEMPLATES}" ]]; then
-  log "Committing issue templates..."
-  while IFS= read -r tmpl; do
-    [[ -z "${tmpl}" ]] && continue
-    SRC="${TEMPLATES_DIR}/issue_templates/${tmpl}.yml"
-    [[ -f "${SRC}" ]] || { warn "Issue template not found, skipping: ${SRC}"; continue; }
-    commit_file ".github/ISSUE_TEMPLATE/${tmpl}.yml" "${SRC}" "chore: add issue template '${tmpl}' via Nautilus setup"
-    ok "  Issue template '${tmpl}' committed"
-  done <<< "${ISSUE_TEMPLATES}"
 fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────

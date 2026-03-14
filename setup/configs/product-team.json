@@ -2,7 +2,6 @@
   "_comment": "Template applied when onboarding a new product team infrastructure repo.",
   "repo": {
     "description": "Infrastructure repository managed by Nautilus",
-    "visibility": "private",
     "has_issues": true,
     "has_projects": false,
     "has_wiki": false,
@@ -17,7 +16,9 @@
     "branch": "main",
     "required_status_checks": {
       "strict": true,
-      "contexts": ["validate"]
+      "contexts": [
+        "validate"
+      ]
     },
     "enforce_admins": false,
     "required_pull_request_reviews": {
@@ -35,29 +36,58 @@
     {
       "name": "stage",
       "wait_timer": 10,
-      "reviewer_teams": ["platform-infra"],
+      "reviewer_teams": [
+        "platform-infra"
+      ],
       "deployment_branch_policy": "protected_branches"
     },
     {
       "name": "prod",
       "wait_timer": 10,
-      "reviewer_teams": ["platform-infra"],
+      "reviewer_teams": [
+        "platform-infra"
+      ],
       "deployment_branch_policy": "protected_branches"
     }
   ],
   "teams": [
-    { "slug": "platform-infra", "permission": "push" }
+    {
+      "slug": "platform-infra",
+      "permission": "push"
+    }
   ],
   "labels": [
-    { "name": "drift",         "color": "d93f0b", "description": "Terraform drift detected — real state diverges from declared state" },
-    { "name": "infra-request", "color": "a2eeef", "description": "Requires platform team action" },
-    { "name": "plan:dev",      "color": "bfd4f2", "description": "Terraform plan posted for dev" },
-    { "name": "plan:stage",    "color": "bfd4f2", "description": "Terraform plan posted for staging" },
-    { "name": "plan:prod",     "color": "bfd4f2", "description": "Terraform plan posted for prod" }
+    {
+      "name": "drift",
+      "color": "d93f0b",
+      "description": "Terraform drift detected — real state diverges from declared state"
+    },
+    {
+      "name": "infra-request",
+      "color": "a2eeef",
+      "description": "Requires platform team action"
+    },
+    {
+      "name": "plan:dev",
+      "color": "bfd4f2",
+      "description": "Terraform plan posted for dev"
+    },
+    {
+      "name": "plan:stage",
+      "color": "bfd4f2",
+      "description": "Terraform plan posted for staging"
+    },
+    {
+      "name": "plan:prod",
+      "color": "bfd4f2",
+      "description": "Terraform plan posted for prod"
+    }
   ],
   "templates": {
     "codeowners": "product",
     "pull_request_template": true,
-    "issue_templates": ["infra_request"]
+    "issue_templates": [
+      "infra_request"
+    ]
   }
 }

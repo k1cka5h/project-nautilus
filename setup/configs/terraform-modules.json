@@ -1,7 +1,6 @@
 {
   "repo": {
     "description": "Private Terraform module library for the Nautilus IaC platform",
-    "visibility": "private",
     "has_issues": true,
     "has_projects": false,
     "has_wiki": false,
@@ -16,7 +15,10 @@
     "branch": "main",
     "required_status_checks": {
       "strict": true,
-      "contexts": ["validate", "test"]
+      "contexts": [
+        "validate",
+        "test"
+      ]
     },
     "enforce_admins": true,
     "required_pull_request_reviews": {
@@ -32,23 +34,70 @@
   },
   "environments": [],
   "teams": [
-    { "slug": "platform-infra", "permission": "maintain" }
+    {
+      "slug": "platform-infra",
+      "permission": "maintain"
+    }
   ],
   "labels": [
-    { "name": "breaking-change",       "color": "d73a4a", "description": "Introduces a breaking change requiring a major version bump" },
-    { "name": "needs-migration-guide", "color": "e4e669", "description": "Breaking change — migration guide must be written before release" },
-    { "name": "module:networking",     "color": "0075ca", "description": "Affects the networking module" },
-    { "name": "module:database",       "color": "0075ca", "description": "Affects the database/postgres module" },
-    { "name": "module:compute",        "color": "0075ca", "description": "Affects the compute/aks module" },
-    { "name": "module:governance",     "color": "0075ca", "description": "Affects the governance/Azure Policy module" },
-    { "name": "good-first-issue",      "color": "7057ff", "description": "Good for new platform team members" },
-    { "name": "bug",                   "color": "d73a4a", "description": "Something is not working as documented" },
-    { "name": "module-request",        "color": "a2eeef", "description": "Request for a new Terraform module" },
-    { "name": "sku-request",           "color": "a2eeef", "description": "Request to add a SKU to the approved list" }
+    {
+      "name": "breaking-change",
+      "color": "d73a4a",
+      "description": "Introduces a breaking change requiring a major version bump"
+    },
+    {
+      "name": "needs-migration-guide",
+      "color": "e4e669",
+      "description": "Breaking change — migration guide must be written before release"
+    },
+    {
+      "name": "module:networking",
+      "color": "0075ca",
+      "description": "Affects the networking module"
+    },
+    {
+      "name": "module:database",
+      "color": "0075ca",
+      "description": "Affects the database/postgres module"
+    },
+    {
+      "name": "module:compute",
+      "color": "0075ca",
+      "description": "Affects the compute/aks module"
+    },
+    {
+      "name": "module:governance",
+      "color": "0075ca",
+      "description": "Affects the governance/Azure Policy module"
+    },
+    {
+      "name": "good-first-issue",
+      "color": "7057ff",
+      "description": "Good for new platform team members"
+    },
+    {
+      "name": "bug",
+      "color": "d73a4a",
+      "description": "Something is not working as documented"
+    },
+    {
+      "name": "module-request",
+      "color": "a2eeef",
+      "description": "Request for a new Terraform module"
+    },
+    {
+      "name": "sku-request",
+      "color": "a2eeef",
+      "description": "Request to add a SKU to the approved list"
+    }
   ],
   "templates": {
     "codeowners": "platform",
     "pull_request_template": true,
-    "issue_templates": ["bug_report", "new_module", "sku_request"]
+    "issue_templates": [
+      "bug_report",
+      "new_module",
+      "sku_request"
+    ]
   }
 }

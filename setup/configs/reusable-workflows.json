@@ -1,7 +1,6 @@
 {
   "repo": {
     "description": "Shared GitHub Actions reusable workflows for the Nautilus IaC platform",
-    "visibility": "private",
     "has_issues": true,
     "has_projects": false,
     "has_wiki": false,
@@ -16,7 +15,9 @@
     "branch": "main",
     "required_status_checks": {
       "strict": true,
-      "contexts": ["test"]
+      "contexts": [
+        "test"
+      ]
     },
     "enforce_admins": true,
     "required_pull_request_reviews": {
@@ -32,21 +33,58 @@
   },
   "environments": [],
   "teams": [
-    { "slug": "platform-infra", "permission": "maintain" }
+    {
+      "slug": "platform-infra",
+      "permission": "maintain"
+    }
   ],
   "labels": [
-    { "name": "breaking-change",       "color": "d73a4a", "description": "Introduces a breaking change — consuming repos must update their infra.yml" },
-    { "name": "needs-migration-guide", "color": "e4e669", "description": "Breaking change — migration steps must be communicated to all product teams" },
-    { "name": "bug",                   "color": "d73a4a", "description": "Something is not working as documented" },
-    { "name": "workflow:validate",     "color": "0075ca", "description": "Affects tf-validate.yml" },
-    { "name": "workflow:plan",         "color": "0075ca", "description": "Affects tf-plan.yml" },
-    { "name": "workflow:deploy",       "color": "0075ca", "description": "Affects tf-deploy.yml" },
-    { "name": "workflow:drift",        "color": "0075ca", "description": "Affects tf-drift.yml" },
-    { "name": "workflow:changes",      "color": "0075ca", "description": "Affects tf-changes.yml" }
+    {
+      "name": "breaking-change",
+      "color": "d73a4a",
+      "description": "Introduces a breaking change — consuming repos must update their infra.yml"
+    },
+    {
+      "name": "needs-migration-guide",
+      "color": "e4e669",
+      "description": "Breaking change — migration steps must be communicated to all product teams"
+    },
+    {
+      "name": "bug",
+      "color": "d73a4a",
+      "description": "Something is not working as documented"
+    },
+    {
+      "name": "workflow:validate",
+      "color": "0075ca",
+      "description": "Affects tf-validate.yml"
+    },
+    {
+      "name": "workflow:plan",
+      "color": "0075ca",
+      "description": "Affects tf-plan.yml"
+    },
+    {
+      "name": "workflow:deploy",
+      "color": "0075ca",
+      "description": "Affects tf-deploy.yml"
+    },
+    {
+      "name": "workflow:drift",
+      "color": "0075ca",
+      "description": "Affects tf-drift.yml"
+    },
+    {
+      "name": "workflow:changes",
+      "color": "0075ca",
+      "description": "Affects tf-changes.yml"
+    }
   ],
   "templates": {
     "codeowners": "platform",
     "pull_request_template": true,
-    "issue_templates": ["bug_report"]
+    "issue_templates": [
+      "bug_report"
+    ]
   }
 }
