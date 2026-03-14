@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HashiCorp.Cdktf"                    Version="0.20.*" />
+    <PackageReference Include="HashiCorp.Cdktf"                    Version="0.21.*" />
     <PackageReference Include="HashiCorp.Cdktf.Providers.Azurerm" Version="12.*"   />
   </ItemGroup>
 
