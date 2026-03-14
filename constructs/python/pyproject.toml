@@ -8,7 +8,7 @@ version = "1.4.0"
 description = "Platform-managed CDKTF construct library for Azure"
 requires-python = ">=3.11"
 dependencies = [
-    "cdktf>=0.20,<0.21",
+    "cdktf>=0.20,<0.22",
     "cdktf-cdktf-provider-azurerm>=12,<13",
     "constructs>=10.3,<11",
 ]
