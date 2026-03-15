@@ -3,7 +3,9 @@ name: Deploy Pages
 on:
   push:
     branches: [main]
-    paths: [docs/**]
+    paths:
+      - docs/**
+      - wiki/**
   workflow_dispatch:
 
 permissions:
@@ -23,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Sync wiki content to docs
+        run: cp wiki/*.md docs/content/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
