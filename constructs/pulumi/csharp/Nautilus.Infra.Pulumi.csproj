@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Nautilus.Infra.Pulumi</RootNamespace>
+    <AssemblyName>Nautilus.Infra.Pulumi</AssemblyName>
+    <Version>1.0.0</Version>
+    <Description>Platform-managed Pulumi component library for Azure (TF-backed)</Description>
+    <RepositoryUrl>https://github.com/nautilus/project-nautilus</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pulumi"                    Version="3.*" />
+    <PackageReference Include="Pulumi.TerraformModule"    Version="1.*" />
+  </ItemGroup>
+
+</Project>

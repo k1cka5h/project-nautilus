@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+
+jobs:
+  test:
+    name: dotnet test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Test
+        run: dotnet test Nautilus.Infra.Pulumi.Tests/ --verbosity normal
+
+  publish:
+    name: Publish to internal NuGet
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref_type == 'tag'
+    environment: registry
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Verify tag matches package version
+        run: |
+          PKG_VERSION=$(dotnet build Nautilus.Infra.Pulumi.csproj --getProperty:Version -nologo -v q)
+          TAG_VERSION="${{ github.ref_name }}"
+          if [ "v${PKG_VERSION}" != "${TAG_VERSION}" ]; then
+            echo "Tag ${TAG_VERSION} does not match project version v${PKG_VERSION}"
+            exit 1
+          fi
+
+      - name: Pack
+        run: dotnet pack Nautilus.Infra.Pulumi.csproj -c Release -o nupkg
+
+      - name: Publish
+        run: |
+          dotnet nuget push nupkg/*.nupkg \
+            --source https://nuget.nautilus.internal/v3/index.json \
+            --api-key ${{ secrets.REGISTRY_TOKEN }}

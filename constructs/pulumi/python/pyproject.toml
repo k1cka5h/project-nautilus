@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "nautilus-infra-pulumi"
+version = "1.0.0"
+description = "Platform-managed Pulumi component library for Azure (TF-backed)"
+requires-python = ">=3.11"
+dependencies = [
+    "pulumi>=3.0,<4",
+    "pulumi-terraform-module>=1.0,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-xdist",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nautilus_infra_pulumi*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
