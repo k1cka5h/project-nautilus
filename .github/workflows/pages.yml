@@ -29,7 +29,7 @@ jobs:
       - name: Sync wiki content to docs
         run: cp wiki/*.md docs/content/
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: docs/
       - uses: actions/deploy-pages@v4
